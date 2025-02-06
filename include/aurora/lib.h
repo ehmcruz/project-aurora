@@ -25,6 +25,7 @@ namespace Game
 
 using MyGlib::dprint;
 using MyGlib::dprintln;
+using MyGlib::Graphics::fp;
 
 constexpr ClockDuration float_to_ClockDuration (const float t)
 {

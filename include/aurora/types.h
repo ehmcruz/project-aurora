@@ -32,6 +32,7 @@ using MyGlib::Graphics::Sphere3D;
 using MyGlib::Graphics::Rect2D;
 using MyGlib::Graphics::Circle2D;
 using MyGlib::Graphics::TextureDescriptor;
+using MyGlib::Graphics::TextureRenderOptions;
 
 using Clock = std::chrono::steady_clock;
 using ClockDuration = Clock::duration;
