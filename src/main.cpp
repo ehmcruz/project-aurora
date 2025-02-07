@@ -8,6 +8,8 @@
 #include <aurora/types.h>
 #include <aurora/lib.h>
 #include <aurora/globals.h>
+#include <aurora/graphics.h>
+#include <aurora/object.h>
 
 // ---------------------------------------------------
 
@@ -27,13 +29,18 @@ void quit_callback (const MyGlib::Event::Quit::Type& event)
 
 // ---------------------------------------------------
 
-Point camera_pos(-0.5, -0.5, -10);
+LightPointDescriptor light;
+Point camera_pos(0, 0, -10);
 Vector camera_vector(0, 0, 1);
 Color ambient_light_color {1, 1, 1, 0.8};
-Cube3D far_cube (5);
-TextureDescriptor texture;
+Cube3D far_cube (10);
+TextureDescriptor texture_main_char;
+TextureDescriptor texture_tree;
+Mylib::Matrix<TextureDescriptor> textures;
+ObjectSpriteAnimation *main_char;
+ObjectSprite *tree;
 
-void render ()
+void render (const float dt)
 {
 	renderer->wait_next_frame();
 
@@ -51,7 +58,8 @@ void render ()
 
 	renderer->draw_cube3D(far_cube, far_cube_pos, far_cube_color);
 
-	renderer->draw_rect2D(Rect2D(3, 2), Vector(0, 0, 1), TextureRenderOptions { .desc = texture });
+	main_char->render(dt);
+	tree->render(dt);
 
 	renderer->render();
 	renderer->update_screen();
@@ -80,8 +88,22 @@ int main (const int argc, const char **argv)
 	dprintln("SDL initialized!");
 
 	renderer->begin_texture_loading();
-	texture = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir1.png");
+	texture_main_char = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir1.png");
+	texture_tree = renderer->load_texture("assets/tree.png");
 	renderer->end_texture_loading();
+
+	textures = renderer->split_texture(texture_main_char, 3, 3);
+
+	main_char = new ObjectSpriteAnimation(nullptr, Rect2D(3, 4), textures.to_span(), 0.1);
+	main_char->set_pos(Vector(0, 0, 1));
+	main_char->get_ref_sprite_animation().set_scale(3);
+
+	tree = new ObjectSprite(nullptr, Rect2D(3, 5), texture_tree);
+	tree->set_pos(Vector(2, 1, 0.5));
+
+	light = renderer->add_light_point_source(
+		Point(0, 0, -10), Color::white()
+	);
 
 	constexpr float dt = 1.0 / 30.0;
 	uint64_t frame = 0;
@@ -92,7 +114,7 @@ int main (const int argc, const char **argv)
 
 		event_manager->process_events();
 
-		render();
+		render(dt);
 
 		std::this_thread::sleep_for(float_to_ClockDuration(dt));
 		frame++;
