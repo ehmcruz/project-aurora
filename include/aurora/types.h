@@ -14,6 +14,7 @@
 #include <my-lib/math-vector.h>
 
 #include <my-game-lib/my-game-lib.h>
+#include <my-game-lib/opengl/opengl.h>
 
 
 namespace Game
@@ -33,6 +34,7 @@ using MyGlib::Graphics::Rect2D;
 using MyGlib::Graphics::Circle2D;
 using MyGlib::Graphics::TextureDescriptor;
 using MyGlib::Graphics::TextureRenderOptions;
+using MyGlib::Graphics::Opengl::Opengl_TextureDescriptor;
 
 using Clock = std::chrono::steady_clock;
 using ClockDuration = Clock::duration;

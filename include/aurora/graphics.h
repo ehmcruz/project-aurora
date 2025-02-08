@@ -12,6 +12,7 @@
 
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
+#include <my-lib/matrix.h>
 
 #include <my-game-lib/my-game-lib.h>
 
@@ -24,6 +25,19 @@ namespace Game
 // ---------------------------------------------------
 
 class Object;
+
+// ---------------------------------------------------
+
+namespace Texture
+{
+	inline TextureDescriptor group_grass;
+	inline Mylib::Matrix<TextureDescriptor> matrix_grass;
+	inline TextureDescriptor grass;
+	inline TextureDescriptor main_char;
+	inline TextureDescriptor tree;
+}
+
+void load_textures ();
 
 // ---------------------------------------------------
 

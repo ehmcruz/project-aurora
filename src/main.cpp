@@ -30,12 +30,10 @@ void quit_callback (const MyGlib::Event::Quit::Type& event)
 // ---------------------------------------------------
 
 LightPointDescriptor light;
-Point camera_pos(0, 0, -10);
-Vector camera_vector(0, 0, 1);
+Point camera_pos(0, 0, 10);
+Vector camera_vector(0, 0, -1);
 Color ambient_light_color {1, 1, 1, 0.8};
 Cube3D far_cube (10);
-TextureDescriptor texture_main_char;
-TextureDescriptor texture_tree;
 Mylib::Matrix<TextureDescriptor> textures;
 ObjectSpriteAnimation *main_char;
 ObjectSprite *tree;
@@ -53,11 +51,12 @@ void render (const float dt)
 		.ambient_light_color = ambient_light_color,
 		} );
 
-	const Vector far_cube_pos = Vector(0, 0, 50);
+	const Vector far_cube_pos = Vector(0, 0, -50);
 	const Color far_cube_color = Color::yellow();
 
 	renderer->draw_cube3D(far_cube, far_cube_pos, far_cube_color);
 
+	//tree->render(dt);
 	main_char->render(dt);
 	tree->render(dt);
 
@@ -87,22 +86,19 @@ int main (const int argc, const char **argv)
 
 	dprintln("SDL initialized!");
 
-	renderer->begin_texture_loading();
-	texture_main_char = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir1.png");
-	texture_tree = renderer->load_texture("assets/tree.png");
-	renderer->end_texture_loading();
+	load_textures();
 
-	textures = renderer->split_texture(texture_main_char, 3, 3);
+	textures = renderer->split_texture(Texture::main_char, 3, 3);
 
 	main_char = new ObjectSpriteAnimation(nullptr, Rect2D(3, 4), textures.to_span(), 0.1);
-	main_char->set_pos(Vector(0, 0, 1));
+	main_char->set_pos(Vector(0, 0, -1));
 	main_char->get_ref_sprite_animation().set_scale(3);
 
-	tree = new ObjectSprite(nullptr, Rect2D(3, 5), texture_tree);
-	tree->set_pos(Vector(2, 1, 0.5));
+	tree = new ObjectSprite(nullptr, Rect2D(5, 5), Texture::tree);
+	tree->set_pos(Vector(2, 1, 0));
 
 	light = renderer->add_light_point_source(
-		Point(0, 0, -10), Color::white()
+		Point(0, 0, 10), Color::white()
 	);
 
 	constexpr float dt = 1.0 / 30.0;

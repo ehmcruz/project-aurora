@@ -3,6 +3,7 @@
 #include <aurora/globals.h>
 #include <aurora/graphics.h>
 #include <aurora/object.h>
+#include <aurora/world.h>
 
 
 namespace Game
