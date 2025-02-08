@@ -94,7 +94,43 @@ Map::Map ()
 
 void Map::render ()
 {
+	MyGlib::Graphics::Opengl::Renderer *opengl_renderer = static_cast<MyGlib::Graphics::Opengl::Renderer*>(renderer);
+	MyGlib::Graphics::Opengl::ProgramTriangleTexture& program = *opengl_renderer->get_program_triangle_texture();
+	const uint32_t n_vertices = this->graphics_vertices.size();
+	auto vertices = program.alloc_vertices(n_vertices);
 
+	for (uint32_t i = 0; i < n_vertices; i++)
+		vertices[i] = this->graphics_vertices[i];
+}
+
+// ---------------------------------------------------
+
+World::World ()
+{
+	this->map = std::make_unique<Map>();
+	this->camera_pos = Vector(-3, -3, 5);
+	this->ambient_light_color.a = 0.5;
+
+	this->light = renderer->add_light_point_source(
+		Point(0, 0, 1000), Color::white()
+	);
+}
+
+// ---------------------------------------------------
+
+void World::render (const float dt)
+{
+	renderer->setup_render_3D( MyGlib::Graphics::RenderArgs3D {
+		.world_camera_pos = this->camera_pos,
+		.world_camera_target = this->camera_pos + camera_vector,
+		.world_camera_up = camera_up,
+		.fov_y = Mylib::Math::degrees_to_radians(fp(45)),
+		.z_near = 0.1,
+		.z_far = 100,
+		.ambient_light_color = this->ambient_light_color,
+		} );
+
+	this->map->render();
 }
 
 // ---------------------------------------------------

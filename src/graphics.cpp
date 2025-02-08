@@ -23,7 +23,7 @@ void load_textures ()
 	renderer->end_texture_loading();
 
 	matrix_grass = renderer->split_texture(group_grass, 224 / 16, 400 / 16);
-	grass = matrix_grass[0, 1];
+	grass = matrix_grass[2, 2];
 }
 
 // ---------------------------------------------------

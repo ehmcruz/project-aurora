@@ -8,6 +8,7 @@
 #include <SDL.h>
 
 #include <vector>
+#include <memory>
 
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
@@ -43,16 +44,32 @@ public:
 	Map ();
 
 	void render ();
+
+	inline Vector2 get_size () const noexcept
+	{
+		return Vector2(this->vertices.get_ncols() - 1, this->vertices.get_nrows() - 1);
+	}
 };
 
 // ---------------------------------------------------
 
 class World
 {
+private:
+	std::unique_ptr<Map> map;
 
+	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, camera_pos, Vector::zero())
+	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Color, ambient_light_color, Color::white())
+	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(LightPointDescriptor, light)
+
+	// isometric view
+	inline static constexpr Vector camera_vector = Vector(1, 1, -1);
+	inline static constexpr Vector camera_up = Vector(0, 0, 1);
 
 public:
+	World ();
 
+	void render (const float dt);
 };
 
 // ---------------------------------------------------

@@ -10,6 +10,7 @@
 #include <aurora/globals.h>
 #include <aurora/graphics.h>
 #include <aurora/object.h>
+#include <aurora/world.h>
 
 // ---------------------------------------------------
 
@@ -19,6 +20,7 @@ namespace Game
 // ---------------------------------------------------
 
 bool alive = true;
+World *world;
 
 // ---------------------------------------------------
 
@@ -29,36 +31,15 @@ void quit_callback (const MyGlib::Event::Quit::Type& event)
 
 // ---------------------------------------------------
 
-LightPointDescriptor light;
-Point camera_pos(0, 0, 10);
-Vector camera_vector(0, 0, -1);
-Color ambient_light_color {1, 1, 1, 0.8};
-Cube3D far_cube (10);
-Mylib::Matrix<TextureDescriptor> textures;
-ObjectSpriteAnimation *main_char;
-ObjectSprite *tree;
+//ObjectSprite *tree;
 
 void render (const float dt)
 {
 	renderer->wait_next_frame();
 
-	renderer->setup_render_3D( MyGlib::Graphics::RenderArgs3D {
-		.world_camera_pos = camera_pos,
-		.world_camera_target = camera_pos + camera_vector,
-		.fov_y = Mylib::Math::degrees_to_radians(fp(45)),
-		.z_near = 0.1,
-		.z_far = 100,
-		.ambient_light_color = ambient_light_color,
-		} );
-
-	const Vector far_cube_pos = Vector(0, 0, -50);
-	const Color far_cube_color = Color::yellow();
-
-	renderer->draw_cube3D(far_cube, far_cube_pos, far_cube_color);
+	world->render(dt);
 
 	//tree->render(dt);
-	main_char->render(dt);
-	tree->render(dt);
 
 	renderer->render();
 	renderer->update_screen();
@@ -88,18 +69,10 @@ int main (const int argc, const char **argv)
 
 	load_textures();
 
-	textures = renderer->split_texture(Texture::main_char, 3, 3);
+	//tree = new ObjectSprite(nullptr, Rect2D(5, 5), Texture::grass);
+	//tree->set_pos(Vector(2, 2, 0));
 
-	main_char = new ObjectSpriteAnimation(nullptr, Rect2D(3, 4), textures.to_span(), 0.1);
-	main_char->set_pos(Vector(0, 0, -1));
-	main_char->get_ref_sprite_animation().set_scale(3);
-
-	tree = new ObjectSprite(nullptr, Rect2D(5, 5), Texture::tree);
-	tree->set_pos(Vector(2, 1, 0));
-
-	light = renderer->add_light_point_source(
-		Point(0, 0, 10), Color::white()
-	);
+	world = new World();
 
 	constexpr float dt = 1.0 / 30.0;
 	uint64_t frame = 0;
