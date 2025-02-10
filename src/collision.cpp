@@ -18,8 +18,8 @@ std::pair<bool, Vector> Collider::check_collision (const Collider& a, const Coll
 {
 	Vector collision_vector;
 
-	const Vector a_pos = a.get_world_pos();
-	const Vector b_pos = b.get_world_pos();
+	const Vector a_pos = a.object->get_ref_pos() + a.ds;
+	const Vector b_pos = b.object->get_ref_pos() + b.ds;
 
 	const Vector distance = b_pos - a_pos;
 	const Vector target_distance = a.half_size + b.half_size;
@@ -68,6 +68,19 @@ std::pair<bool, Vector> Collider::check_collision (const Collider& a, const Coll
 
 	return std::pair<bool, Vector>(colliding_x && colliding_y && colliding_z, collision_vector);
 }
+
+// ---------------------------------------------------
+
+#ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
+
+void Collider::render (const Color& color) const
+{
+	auto cube = WireCube3D(this->half_size * fp(2));
+
+	renderer->draw_wire_cube3D(cube, this->object->get_ref_pos() + this->ds, color);
+}
+
+#endif
 
 // ---------------------------------------------------
 

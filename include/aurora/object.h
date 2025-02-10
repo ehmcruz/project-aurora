@@ -8,14 +8,17 @@
 #include <SDL.h>
 
 #include <string>
+#include <list>
 
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
 
 #include <my-game-lib/my-game-lib.h>
 
+#include <aurora/config.h>
 #include <aurora/types.h>
 #include <aurora/graphics.h>
+#include <aurora/collision.h>
 
 
 namespace Game
@@ -27,28 +30,74 @@ class World;
 
 // ---------------------------------------------------
 
-class Object
+class AbstractObject
 {
-protected:
-	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(Vector, pos)
-	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, vel, Vector::zero())
-	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(std::string, name)
 	MYLIB_OO_ENCAPSULATE_PTR(World*, world)
+	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(std::string, name)
 
 public:
-	inline Object (World *world_)
+	inline AbstractObject (World *world_)
 		: world(world_)
 	{
 	}
 
-	virtual ~Object () = default;
+	virtual ~AbstractObject () = default;
 
-	virtual void physics (const float dt);
 	virtual void render (const float dt) = 0;
+	virtual void update (const float dt) = 0;
 };
 
 // ---------------------------------------------------
 
+class Object : public AbstractObject
+{
+	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Point, pos, Point::zero())
+
+protected:
+	std::list<Collider> colliders;
+
+public:
+	inline Object (World *world_)
+		: AbstractObject(world_)
+	{
+	}
+
+	inline Object (World *world_, const Point& pos_)
+		: AbstractObject(world_), pos(pos_)
+	{
+	}
+
+#ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
+	void render_colliders (const Color& color) const;
+#endif
+};
+
+// ---------------------------------------------------
+
+class DynamicObject : public Object
+{
+protected:
+	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, vel, Vector::zero())
+
+public:
+	inline DynamicObject (World *world_)
+		: Object(world_)
+	{
+	}
+
+	inline DynamicObject (World *world_, const Point& pos_)
+		: Object(world_, pos_)
+	{
+	}
+	
+	virtual void physics (const float dt)
+	{
+		this->pos += this->vel * dt;
+	}
+};
+
+// ---------------------------------------------------
+/*
 class ObjectSprite : public Object
 {
 private:
@@ -61,10 +110,10 @@ public:
 	}
 
 	void render (const float dt) override;
-};
+};*/
 
 // ---------------------------------------------------
-
+/*
 class ObjectSpriteAnimation : public Object
 {
 private:
@@ -77,6 +126,17 @@ public:
 	}
 
 	void render (const float dt) override;
+};*/
+
+// ---------------------------------------------------
+
+class PlayerObject : public DynamicObject
+{
+public:
+	PlayerObject (World *world_, const Point& pos_);
+
+	void render (const float dt) override final;
+	void update (const float dt) override final;
 };
 
 // ---------------------------------------------------

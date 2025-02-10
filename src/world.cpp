@@ -114,6 +114,8 @@ World::World ()
 	this->light = renderer->add_light_point_source(
 		Point(0, 0, 1000), Color::white()
 	);
+
+	this->objects.push_back( std::make_unique<PlayerObject>(this, Vector(0, 0, 2)) );
 }
 
 // ---------------------------------------------------
@@ -133,6 +135,9 @@ void World::render (const float dt)
 		} );
 
 	this->map->render();
+
+	for (const auto& object : this->objects)
+		object->render(dt);
 }
 
 // ---------------------------------------------------

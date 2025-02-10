@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <memory>
+#include <list>
 
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
@@ -65,6 +66,8 @@ private:
 	// isometric view
 	inline static constexpr Vector camera_vector = Vector(1, 1, -0.5);
 	inline static constexpr Vector camera_up = Vector(0, 0, 1);
+
+	std::list< std::unique_ptr<AbstractObject> > objects;
 
 public:
 	World ();

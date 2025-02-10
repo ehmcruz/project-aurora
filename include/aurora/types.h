@@ -32,6 +32,8 @@ using MyGlib::Graphics::Cube3D;
 using MyGlib::Graphics::Sphere3D;
 using MyGlib::Graphics::Rect2D;
 using MyGlib::Graphics::Circle2D;
+using MyGlib::Graphics::Line3D;
+using MyGlib::Graphics::WireCube3D;
 using MyGlib::Graphics::TextureDescriptor;
 using MyGlib::Graphics::TextureRenderOptions;
 using MyGlib::Graphics::Opengl::Opengl_TextureDescriptor;
