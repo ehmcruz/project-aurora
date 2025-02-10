@@ -83,6 +83,8 @@ int main (const int argc, const char **argv)
 
 		event_manager->process_events();
 
+		world->process_update(dt);
+		world->process_physics(dt);
 		render(dt);
 
 		std::this_thread::sleep_for(float_to_ClockDuration(dt));

@@ -115,7 +115,15 @@ World::World ()
 		Point(0, 0, 1000), Color::white()
 	);
 
-	this->objects.push_back( std::make_unique<PlayerObject>(this, Vector(0, 0, 2)) );
+	this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(0, 0, 2)) );
+}
+
+// ---------------------------------------------------
+
+void World::process_physics (const float dt)
+{
+	for (DynamicObject *object : this->dynamic_objects)
+		object->physics(dt);
 }
 
 // ---------------------------------------------------
@@ -136,8 +144,16 @@ void World::render (const float dt)
 
 	this->map->render();
 
-	for (const auto& object : this->objects)
+	for (auto& object : this->objects)
 		object->render(dt);
+}
+
+// ---------------------------------------------------
+
+void World::process_update (const float dt)
+{
+	for (auto& object : this->objects)
+		object->update(dt);
 }
 
 // ---------------------------------------------------

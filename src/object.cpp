@@ -57,6 +57,21 @@ void PlayerObject::render (const float dt)
 
 void PlayerObject::update (const float dt)
 {
+	constexpr float speed = 2.0;
+
+	if (event_manager->is_key_down(SDL_SCANCODE_RIGHT))
+		this->vel.x = speed;
+	else if (event_manager->is_key_down(SDL_SCANCODE_LEFT))
+		this->vel.x = -speed;
+	else
+		this->vel.x = 0;
+	
+	if (event_manager->is_key_down(SDL_SCANCODE_UP))
+		this->vel.y = speed;
+	else if (event_manager->is_key_down(SDL_SCANCODE_DOWN))
+		this->vel.y = -speed;
+	else
+		this->vel.y = 0;
 }
 
 // ---------------------------------------------------

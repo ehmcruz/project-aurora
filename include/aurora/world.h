@@ -68,11 +68,25 @@ private:
 	inline static constexpr Vector camera_up = Vector(0, 0, 1);
 
 	std::list< std::unique_ptr<AbstractObject> > objects;
+	std::list< DynamicObject* > dynamic_objects;
 
 public:
 	World ();
 
+	void process_physics (const float dt);
 	void render (const float dt);
+	void process_update (const float dt);
+
+	void add_object (std::unique_ptr<AbstractObject> object)
+	{
+		this->objects.push_back( std::move(object) );
+	}
+
+	void add_dynamic_object (std::unique_ptr<DynamicObject> object)
+	{
+		this->dynamic_objects.push_back( object.get() );
+		this->add_object( std::move(object) );
+	}
 };
 
 // ---------------------------------------------------

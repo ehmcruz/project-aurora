@@ -90,7 +90,7 @@ public:
 	{
 	}
 	
-	virtual void physics (const float dt)
+	inline void physics (const float dt) noexcept
 	{
 		this->pos += this->vel * dt;
 	}
