@@ -63,7 +63,7 @@ private:
 	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(LightPointDescriptor, light)
 
 	// isometric view
-	inline static constexpr Vector camera_vector = Vector(1, 1, -1);
+	inline static constexpr Vector camera_vector = Vector(1, 1, -0.5);
 	inline static constexpr Vector camera_up = Vector(0, 0, 1);
 
 public:

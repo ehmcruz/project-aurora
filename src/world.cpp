@@ -42,48 +42,48 @@ Map::Map ()
 
 			enum PositionIndex {
 				WestSouth = 0,
-				WestNorth = 1,
-				EastSouth = 2,
+				EastSouth = 1,
+				WestNorth = 2,
 				EastSouthRepeat = 3,
-				WestNorthRepeat = 4,
-				EastNorth = 5
+				EastNorth = 4,
+				WestNorthRepeat = 5
 			};
 
-			// doing clock-wise
+			// doing counter clock-wise
 
 			// first triangle
 
 			gv[WestSouth].offset = Vector(i, j, 0);
-			gv[WestNorth].offset = Vector(i, j+1, 0);
 			gv[EastSouth].offset = Vector(i+1, j, 0);
+			gv[WestNorth].offset = Vector(i, j+1, 0);
 
 			gv[WestSouth].tex_coords = Vector(desc->tex_coords[LeftBottom].x, desc->tex_coords[LeftBottom].y, desc->atlas->texture_depth);
-			gv[WestNorth].tex_coords = Vector(desc->tex_coords[LeftTop].x, desc->tex_coords[LeftTop].y, desc->atlas->texture_depth);
 			gv[EastSouth].tex_coords = Vector(desc->tex_coords[RightBottom].x, desc->tex_coords[RightBottom].y, desc->atlas->texture_depth);
+			gv[WestNorth].tex_coords = Vector(desc->tex_coords[LeftTop].x, desc->tex_coords[LeftTop].y, desc->atlas->texture_depth);
 
 			// second triangle
 
 			gv[EastSouthRepeat].offset = gv[EastSouth].offset;
-			gv[WestNorthRepeat].offset = gv[WestNorth].offset;
 			gv[EastNorth].offset = Vector(i+1, j+1, 0);
+			gv[WestNorthRepeat].offset = gv[WestNorth].offset;
 
 			gv[EastSouthRepeat].tex_coords = gv[EastSouth].tex_coords;
-			gv[WestNorthRepeat].tex_coords = gv[WestNorth].tex_coords;
 			gv[EastNorth].tex_coords = Vector(desc->tex_coords[RightTop].x, desc->tex_coords[RightTop].y, desc->atlas->texture_depth);
+			gv[WestNorthRepeat].tex_coords = gv[WestNorth].tex_coords;
 
 			// calculate normals
 
 			Vector dir_east = gv[EastSouth].offset - gv[WestSouth].offset;
 			Vector dir_north = gv[WestNorth].offset - gv[WestSouth].offset;
 			gv[WestSouth].gvertex.normal = Mylib::Math::normalize( Mylib::Math::cross_product(dir_east, dir_north) );
-			gv[WestNorth].gvertex.normal = gv[WestSouth].gvertex.normal;
 			gv[EastSouth].gvertex.normal = gv[WestSouth].gvertex.normal;
+			gv[WestNorth].gvertex.normal = gv[WestSouth].gvertex.normal;
 
 			dir_east = gv[EastNorth].offset - gv[WestNorth].offset;
 			dir_north = gv[EastNorth].offset - gv[EastSouth].offset;
 			gv[EastSouthRepeat].gvertex.normal = Mylib::Math::normalize( Mylib::Math::cross_product(dir_east, dir_north) );
-			gv[WestNorthRepeat].gvertex.normal = gv[EastSouthRepeat].gvertex.normal;
 			gv[EastNorth].gvertex.normal = gv[EastSouthRepeat].gvertex.normal;
+			gv[WestNorthRepeat].gvertex.normal = gv[EastSouthRepeat].gvertex.normal;
 
 			k += 6;
 		}
@@ -124,9 +124,11 @@ void World::render (const float dt)
 		.world_camera_pos = this->camera_pos,
 		.world_camera_target = this->camera_pos + camera_vector,
 		.world_camera_up = camera_up,
-		.fov_y = Mylib::Math::degrees_to_radians(fp(45)),
-		.z_near = 0.1,
-		.z_far = 100,
+		.projection = MyGlib::Graphics::OrthogonalProjectionInfo {
+			.view_width = 10,
+			.z_near = 0.1,
+			.z_far = 100,
+		},
 		.ambient_light_color = this->ambient_light_color,
 		} );
 
