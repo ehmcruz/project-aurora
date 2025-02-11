@@ -24,6 +24,7 @@ namespace Game
 
 using MyGlib::Graphics::Vector;
 using MyGlib::Graphics::Point;
+using MyGlib::Graphics::Quaternion;
 using MyGlib::Graphics::Vector2;
 using MyGlib::Graphics::Vector4f;
 using MyGlib::Graphics::Color;
@@ -37,6 +38,10 @@ using MyGlib::Graphics::WireCube3D;
 using MyGlib::Graphics::TextureDescriptor;
 using MyGlib::Graphics::TextureRenderOptions;
 using MyGlib::Graphics::Opengl::Opengl_TextureDescriptor;
+
+using GraphicsVertex = MyGlib::Graphics::Opengl::ProgramTriangleTexture::Vertex;
+
+using VectorBasis = Mylib::Math::VectorBasis3<float>;
 
 using Clock = std::chrono::steady_clock;
 using ClockDuration = Clock::duration;

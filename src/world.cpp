@@ -1,3 +1,4 @@
+#include <aurora/config.h>
 #include <aurora/types.h>
 #include <aurora/lib.h>
 #include <aurora/globals.h>
@@ -132,8 +133,8 @@ void World::render (const float dt)
 {
 	renderer->setup_render_3D( MyGlib::Graphics::RenderArgs3D {
 		.world_camera_pos = this->camera_pos,
-		.world_camera_target = this->camera_pos + camera_vector,
-		.world_camera_up = camera_up,
+		.world_camera_target = this->camera_pos + Config::camera_vector,
+		.world_camera_up = Config::camera_up,
 		.projection = MyGlib::Graphics::OrthogonalProjectionInfo {
 			.view_width = 10,
 			.z_near = 0.1,

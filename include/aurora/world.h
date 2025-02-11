@@ -31,8 +31,6 @@ namespace Game
 class Map
 {
 public:
-	using GraphicsVertex = MyGlib::Graphics::Opengl::ProgramTriangleTexture::Vertex;
-
 	struct Vertex {
 		Vector pos;
 	};
@@ -62,10 +60,6 @@ private:
 	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, camera_pos, Vector::zero())
 	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Color, ambient_light_color, Color::white())
 	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(LightPointDescriptor, light)
-
-	// isometric view
-	inline static constexpr Vector camera_vector = Vector(1, 1, -0.5);
-	inline static constexpr Vector camera_up = Vector(0, 0, 1);
 
 	std::list< std::unique_ptr<AbstractObject> > objects;
 	std::list< DynamicObject* > dynamic_objects;
