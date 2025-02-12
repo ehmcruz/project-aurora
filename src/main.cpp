@@ -67,7 +67,8 @@ int main (const int argc, const char **argv)
 
 	dprintln("SDL initialized!");
 
-	load_textures();
+	load_graphics();
+	load_objects();
 
 	//tree = new ObjectSprite(nullptr, Rect2D(5, 5), Texture::grass);
 	//tree->set_pos(Vector(2, 2, 0));

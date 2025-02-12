@@ -69,6 +69,7 @@ private:
 	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(LightPointDescriptor, light)
 
 	std::list< std::unique_ptr<Object> > objects;
+	std::list< StaticObject* > static_objects;
 	std::list< DynamicObject* > dynamic_objects;
 
 public:
@@ -82,6 +83,12 @@ public:
 	void add_object (std::unique_ptr<Object> object)
 	{
 		this->objects.push_back( std::move(object) );
+	}
+
+	void add_static_object (std::unique_ptr<StaticObject> object)
+	{
+		this->static_objects.push_back( object.get() );
+		this->add_object( std::move(object) );
 	}
 
 	void add_dynamic_object (std::unique_ptr<DynamicObject> object)

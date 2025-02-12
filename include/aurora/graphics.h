@@ -34,35 +34,36 @@ namespace Texture
 	inline Mylib::Matrix<TextureDescriptor> matrix_grass;
 	inline TextureDescriptor grass;
 	inline TextureDescriptor main_char;
-	inline TextureDescriptor tree;
+	inline TextureDescriptor tree_00;
+	inline TextureDescriptor castle_00;
 }
 
-void load_textures ();
+void load_graphics ();
 
 // ---------------------------------------------------
 
 class Sprite
 {
+public:
+	enum PositionIndex {
+		WestSouth = 0,
+		EastSouth = 1,
+		WestNorth = 2,
+		EastSouthRepeat = 3,
+		EastNorth = 4,
+		WestNorthRepeat = 5
+	};
+
 private:
 	MYLIB_OO_ENCAPSULATE_PTR_INIT(StaticObject*, object, nullptr)
-	MYLIB_OO_ENCAPSULATE_OBJ(Rect2D, rect)
 	MYLIB_OO_ENCAPSULATE_OBJ(TextureDescriptor, texture)
-	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, ds, Vector::zero())
+	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(Vector2, size)
+	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(Vector2, ds)
+
+	std::array<GraphicsVertex, 6> graphics_vertices; // 2 triangles
 
 public:
-	Sprite (StaticObject *object_, const Rect2D& rect_, const TextureDescriptor& texture_)
-		: object(object_), rect(rect_), texture(texture_)
-	{
-		this->rect.set_scale_y(-1);
-		this->rect.calculate_vertices();
-	}
-
-	void set_scale (const float scale) noexcept
-	{
-		this->rect.set_scale_x(scale);
-		this->rect.set_scale_y(-scale);
-		this->rect.calculate_vertices();
-	}
+	Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 ds_);
 
 	void render ();
 };

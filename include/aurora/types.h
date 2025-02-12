@@ -29,6 +29,7 @@ using MyGlib::Graphics::Vector;
 using MyGlib::Graphics::Point;
 using MyGlib::Graphics::Quaternion;
 using MyGlib::Graphics::Vector2;
+using MyGlib::Graphics::Vector3;
 using MyGlib::Graphics::Vector4f;
 using MyGlib::Graphics::Color;
 using MyGlib::Graphics::LightPointDescriptor;

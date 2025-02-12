@@ -15,7 +15,7 @@ namespace Game
 // ---------------------------------------------------
 
 Map::Map (World *world_)
-	: Object(world_)
+	: Object(world_, Type::Map, Subtype::Map)
 {
 	this->vertices = Mylib::Matrix<Vertex>(100, 100);
 
@@ -180,6 +180,7 @@ World::World ()
 		Point(0, 0, 1000), Color::white()
 	);
 
+	this->add_static_object( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(5, 5, 3)) );
 	this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(0, 0, 10)) );
 }
 
@@ -223,7 +224,7 @@ void World::render (const float dt)
 		.world_camera_target = this->camera_pos + Config::camera_vector,
 		.world_camera_up = Config::camera_up,
 		.projection = MyGlib::Graphics::OrthogonalProjectionInfo {
-			.view_width = 20,
+			.view_width = 15,
 			.z_near = 0.1,
 			.z_far = 100,
 		},

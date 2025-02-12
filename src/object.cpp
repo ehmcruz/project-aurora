@@ -1,3 +1,6 @@
+#include <unordered_map>
+#include <utility>
+
 #include <aurora/config.h>
 #include <aurora/types.h>
 #include <aurora/lib.h>
@@ -9,6 +12,86 @@
 
 namespace Game
 {
+
+// ---------------------------------------------------
+
+struct BluePrintStaticObjectSprite {
+	Object::Type type;
+	Object::Subtype subtype;
+	TextureDescriptor& texture;
+	Vector3 size;
+};
+
+// ---------------------------------------------------
+
+static std::unordered_map<uint32_t, BluePrintStaticObjectSprite> blueprints_static_object_sprite;
+
+// ---------------------------------------------------
+
+void load_objects ()
+{
+	// tree_00
+	{
+		auto [it, success] = blueprints_static_object_sprite.insert({
+			std::to_underlying(Object::Subtype::Tree_00),
+			{
+				.type = Object::Type::Tree,
+				.subtype = Object::Subtype::Tree_00,
+				.texture = Texture::tree_00,
+				.size = Vector3(2, 2, 2)
+			}
+		});
+		mylib_assert_exception_msg(success, "failed to insert blueprint for tree_00");
+	}
+
+	// castle_00
+	{
+		auto [it, success] = blueprints_static_object_sprite.insert({
+			std::to_underlying(Object::Subtype::Castle_00),
+			{
+				.type = Object::Type::Castle,
+				.subtype = Object::Subtype::Castle_00,
+				.texture = Texture::castle_00,
+				.size = Vector3(5, 5, 5)
+			}
+		});
+		mylib_assert_exception_msg(success, "failed to insert blueprint for castle_00");
+	}
+}
+
+// ---------------------------------------------------
+
+std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
+	World *world,
+	const Object::Subtype subtype,
+	const Vector& pos
+	)
+{
+	const Object::Type type = Object::get_type(subtype);
+	const auto it = blueprints_static_object_sprite.find({std::to_underlying(subtype)});
+	mylib_assert_exception_msg(it != blueprints_static_object_sprite.end(), "blueprint not found for ", type, " ", subtype);
+
+	const auto& blueprint = it->second;
+
+	std::unique_ptr<StaticObjectSprite> r = std::make_unique<StaticObjectSprite>(
+		world,
+		blueprint.type,
+		blueprint.subtype,
+		pos,
+		blueprint.texture,
+		Vector2(blueprint.size.x, blueprint.size.y),
+		Vector2(0, 0)
+	);
+
+	r->get_colliders().push_back(Collider {
+		.object = r.get(),
+		.ds = Vector::zero(),
+		.size = blueprint.size,
+		.id = 0
+	});
+
+	return r;
+}
 
 // ---------------------------------------------------
 
@@ -24,23 +107,26 @@ void StaticObject::render_colliders (const Color& color) const
 
 // ---------------------------------------------------
 
-
-/*void ObjectSprite::render (const float dt)
+void StaticObjectSprite::render (const float dt)
 {
+#ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
+	this->render_colliders(Color::red());
+#endif
+
 	this->sprite.render();
-}*/
+}
 
 // ---------------------------------------------------
 
-/*void ObjectSpriteAnimation::render (const float dt)
+void StaticObjectSprite::update (const float dt)
 {
-	this->sprite_animation.render(dt);
-}*/
+}
 
 // ---------------------------------------------------
 
 PlayerObject::PlayerObject (World *world_, const Point& pos_)
-	: DynamicObject(world_, pos_)
+	: DynamicObject(world_, Type::Character, Subtype::Player, pos_),
+	  sprite(this, Texture::tree_00, Vector2(2, 2), Vector2(0, 0))
 {
 	this->colliders.push_back(Collider {
 		.object = this,
@@ -58,71 +144,7 @@ void PlayerObject::render (const float dt)
 	this->render_colliders(Color::red());
 #endif
 
-	const Quaternion q = Quaternion::rotation(Vector(0, 0, -1), Config::camera_vector) * Quaternion::rotation(Vector(0, 1, 0), Vector(1, 1, 0));
-
-	VectorBasis basis = VectorBasis::default_rh_orthonormal_basis();
-	basis.rotate(q);
-
-	dprintln("basis = ", basis);
-
-	std::array<GraphicsVertex, 6> graphics_vertices; // 2 triangles
-
-	enum PositionIndex {
-		WestSouth = 0,
-		EastSouth = 1,
-		WestNorth = 2,
-		EastSouthRepeat = 3,
-		EastNorth = 4,
-		WestNorthRepeat = 5
-	};
-
-	using enum Rect2D::VertexPositionIndex;
-
-	const Vector half_size = Vector(0.8, 1, 0);
-
-	auto& texture = Texture::tree;
-	const Opengl_TextureDescriptor *desc = texture.info->data.get_value<Opengl_TextureDescriptor*>();
-
-	// doing counter clock-wise
-
-	// first triangle - vertices
-
-	graphics_vertices[WestSouth].gvertex.pos = -half_size.x * basis.vx + -half_size.y * basis.vy;
-	graphics_vertices[EastSouth].gvertex.pos = half_size.x * basis.vx + -half_size.y * basis.vy;
-	graphics_vertices[WestNorth].gvertex.pos = -half_size.x * basis.vx + half_size.y * basis.vy;
-
-	// first triangle - tex coords
-
-	graphics_vertices[WestSouth].tex_coords = Vector(desc->tex_coords[LeftBottom].x, desc->tex_coords[LeftBottom].y, desc->atlas->texture_depth);
-	graphics_vertices[EastSouth].tex_coords = Vector(desc->tex_coords[RightBottom].x, desc->tex_coords[RightBottom].y, desc->atlas->texture_depth);
-	graphics_vertices[WestNorth].tex_coords = Vector(desc->tex_coords[LeftTop].x, desc->tex_coords[LeftTop].y, desc->atlas->texture_depth);
-
-	// second triangle - vertices
-
-	graphics_vertices[EastSouthRepeat].gvertex.pos = graphics_vertices[EastSouth].gvertex.pos;
-	graphics_vertices[EastNorth].gvertex.pos = half_size.x * basis.vx + half_size.y * basis.vy;
-	graphics_vertices[WestNorthRepeat].gvertex.pos = graphics_vertices[WestNorth].gvertex.pos;
-
-	// second triangle - tex coords
-
-	graphics_vertices[EastSouthRepeat].tex_coords = graphics_vertices[EastSouth].tex_coords;
-	graphics_vertices[EastNorth].tex_coords = Vector(desc->tex_coords[RightTop].x, desc->tex_coords[RightTop].y, desc->atlas->texture_depth);
-	graphics_vertices[WestNorthRepeat].tex_coords = graphics_vertices[WestNorth].tex_coords;
-
-	// normals and global positions
-
-	for (auto& gv : graphics_vertices) {
-		gv.gvertex.normal = basis.vz;
-		gv.offset = this->pos;
-	}
-
-	MyGlib::Graphics::Opengl::Renderer *opengl_renderer = static_cast<MyGlib::Graphics::Opengl::Renderer*>(renderer);
-	MyGlib::Graphics::Opengl::ProgramTriangleTexture& program = *opengl_renderer->get_program_triangle_texture();
-	const uint32_t n_vertices = graphics_vertices.size();
-	auto vertices = program.alloc_vertices(n_vertices);
-
-	for (uint32_t i = 0; i < n_vertices; i++)
-		vertices[i] = graphics_vertices[i];
+	this->sprite.render();
 }
 
 // ---------------------------------------------------
@@ -144,6 +166,36 @@ void PlayerObject::update (const float dt)
 		this->vel.y = -speed;
 	else
 		this->vel.y = 0;
+}
+
+// ---------------------------------------------------
+
+const char* enum_class_to_str (const Object::Type value)
+{
+	static constexpr auto strs = std::to_array<const char*>({
+		#define _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(V) #V,
+		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUES_
+		#undef _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_
+	});
+
+	mylib_assert_exception_msg(std::to_underlying(value) < strs.size(), "invalid enum class value ", std::to_underlying(value))
+
+	return strs[ std::to_underlying(value) ];
+}
+
+// ---------------------------------------------------
+
+const char* enum_class_to_str (const Object::Subtype value)
+{
+	static constexpr auto strs = std::to_array<const char*>({
+		#define _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(TYPE, V) #V,
+		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUES_
+		#undef _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_
+	});
+
+	mylib_assert_exception_msg(std::to_underlying(value) < strs.size(), "invalid enum class value ", std::to_underlying(value))
+
+	return strs[ std::to_underlying(value) ];
 }
 
 // ---------------------------------------------------
