@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <aurora/config.h>
 #include <aurora/types.h>
 #include <aurora/lib.h>
@@ -12,7 +14,8 @@ namespace Game
 
 // ---------------------------------------------------
 
-Map::Map ()
+Map::Map (World *world_)
+	: Object(world_)
 {
 	this->vertices = Mylib::Matrix<Vertex>(100, 100);
 
@@ -93,7 +96,7 @@ Map::Map ()
 
 // ---------------------------------------------------
 
-void Map::render ()
+void Map::render (const float dt)
 {
 	MyGlib::Graphics::Opengl::Renderer *opengl_renderer = static_cast<MyGlib::Graphics::Opengl::Renderer*>(renderer);
 	MyGlib::Graphics::Opengl::ProgramTriangleTexture& program = *opengl_renderer->get_program_triangle_texture();
@@ -106,9 +109,70 @@ void Map::render ()
 
 // ---------------------------------------------------
 
+void Map::update (const float dt)
+{
+}
+
+// ---------------------------------------------------
+
+float Map::get_z (const Vector2& pos) const noexcept
+{
+	const Vector2 map_size = this->get_size();
+
+	if (pos.x < 0 || pos.y < 0 || pos.x >= map_size.x || pos.y >= map_size.y) [[unlikely]]
+		return std::numeric_limits<float>::lowest();
+
+	const uint32_t cell_x = pos.x;
+	const uint32_t cell_y = pos.y;
+	const Vector2 local_pos = Vector2(pos.x, pos.y) - Vector2(cell_x, cell_y);
+
+	/*
+		f(x) = -x + 1
+
+		if (local_pos.y < f(local_pos.x)), then we are in the WestSouth triangle
+		else, we are in the EastNorth triangle.
+	*/
+
+	auto f = [](const float x) -> float {
+		return -x + 1;
+	};
+
+	Plane plane;
+
+	// let's create a plane from the triangle
+
+	if (local_pos.y < f(local_pos.x)) { // WestSouth triangle
+		plane.point = this->vertices[cell_x, cell_y].pos;
+		plane.normal = Mylib::Math::normalize( Mylib::Math::cross_product(
+			this->vertices[cell_x+1, cell_y].pos - this->vertices[cell_x, cell_y].pos,
+			this->vertices[cell_x, cell_y+1].pos - this->vertices[cell_x, cell_y].pos
+		) );
+	}
+	else { // EastNorth triangle
+		plane.point = this->vertices[cell_x+1, cell_y+1].pos;
+		plane.normal = Mylib::Math::normalize( Mylib::Math::cross_product(
+			this->vertices[cell_x, cell_y+1].pos - this->vertices[cell_x+1, cell_y+1].pos,
+			this->vertices[cell_x+1, cell_y].pos - this->vertices[cell_x+1, cell_y+1].pos
+		) );
+	}
+
+	// calculate the z value
+
+	const auto line = Line {
+		.point = Point(pos.x, pos.y, 0),
+		.vector = Vector(0, 0, 1)
+	};
+
+	const Point intersection = Mylib::Math::intersection(plane, line);
+
+	return intersection.z;
+}
+
+// ---------------------------------------------------
+
 World::World ()
 {
-	this->map = std::make_unique<Map>();
+	this->map = std::make_unique<Map>(this);
 	this->camera_pos = Vector(-3, -3, 5);
 	this->ambient_light_color.a = 0.5;
 
@@ -116,15 +180,38 @@ World::World ()
 		Point(0, 0, 1000), Color::white()
 	);
 
-	this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(0, 0, 2)) );
+	this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(0, 0, 10)) );
 }
 
 // ---------------------------------------------------
 
 void World::process_physics (const float dt)
 {
-	for (DynamicObject *object : this->dynamic_objects)
-		object->physics(dt);
+	for (DynamicObject *obj : this->dynamic_objects)
+		obj->physics(dt);
+
+	this->process_map_collision();
+}
+
+// ---------------------------------------------------
+
+void World::process_map_collision ()
+{
+	for (DynamicObject *obj : this->dynamic_objects) {
+		Vector& obj_pos = obj->get_ref_pos();
+
+		for (Collider& collider : obj->get_colliders()) {
+			const Point collider_pos = obj_pos + collider.ds;
+			const float z = this->map->get_z(Vector2(collider_pos.x, collider_pos.y));
+			const float collider_lowest_z = collider_pos.z - collider.size.z / fp(2);
+			const float altitude = collider_lowest_z - z;
+
+			if (altitude < 0) {
+				obj->get_ref_vel().z = 0;
+				obj_pos.z -= altitude;
+			}
+		}
+	}
 }
 
 // ---------------------------------------------------
@@ -136,25 +223,25 @@ void World::render (const float dt)
 		.world_camera_target = this->camera_pos + Config::camera_vector,
 		.world_camera_up = Config::camera_up,
 		.projection = MyGlib::Graphics::OrthogonalProjectionInfo {
-			.view_width = 10,
+			.view_width = 20,
 			.z_near = 0.1,
 			.z_far = 100,
 		},
 		.ambient_light_color = this->ambient_light_color,
 		} );
 
-	this->map->render();
+	this->map->render(dt);
 
-	for (auto& object : this->objects)
-		object->render(dt);
+	for (auto& obj : this->objects)
+		obj->render(dt);
 }
 
 // ---------------------------------------------------
 
 void World::process_update (const float dt)
 {
-	for (auto& object : this->objects)
-		object->update(dt);
+	for (auto& obj : this->objects)
+		obj->update(dt);
 }
 
 // ---------------------------------------------------

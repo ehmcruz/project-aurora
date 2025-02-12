@@ -35,7 +35,7 @@ void Sprite::render ()
 
 // ---------------------------------------------------
 
-SpriteAnimation::SpriteAnimation (Object *object_, const Rect2D& rect_, std::span<TextureDescriptor> textures, const float frame_duration_)
+SpriteAnimation::SpriteAnimation (StaticObject *object_, const Rect2D& rect_, std::span<TextureDescriptor> textures, const float frame_duration_)
 	: object(object_), frame_duration(frame_duration_), rect(rect_)
 {
 //	dprintln("SpriteAnimation::SpriteAnimation");

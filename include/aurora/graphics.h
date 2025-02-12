@@ -24,7 +24,7 @@ namespace Game
 
 // ---------------------------------------------------
 
-class Object;
+class StaticObject;
 
 // ---------------------------------------------------
 
@@ -44,13 +44,13 @@ void load_textures ();
 class Sprite
 {
 private:
-	MYLIB_OO_ENCAPSULATE_PTR_INIT(Object*, object, nullptr)
+	MYLIB_OO_ENCAPSULATE_PTR_INIT(StaticObject*, object, nullptr)
 	MYLIB_OO_ENCAPSULATE_OBJ(Rect2D, rect)
 	MYLIB_OO_ENCAPSULATE_OBJ(TextureDescriptor, texture)
 	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, ds, Vector::zero())
 
 public:
-	Sprite (Object *object_, const Rect2D& rect_, const TextureDescriptor& texture_)
+	Sprite (StaticObject *object_, const Rect2D& rect_, const TextureDescriptor& texture_)
 		: object(object_), rect(rect_), texture(texture_)
 	{
 		this->rect.set_scale_y(-1);
@@ -72,7 +72,7 @@ public:
 class SpriteAnimation
 {
 private:
-	MYLIB_OO_ENCAPSULATE_PTR_INIT(Object*, object, nullptr)
+	MYLIB_OO_ENCAPSULATE_PTR_INIT(StaticObject*, object, nullptr)
 	MYLIB_OO_ENCAPSULATE_OBJ_READONLY(std::vector<Sprite>, sprites)
 	MYLIB_OO_ENCAPSULATE_SCALAR(float, frame_duration)
 	MYLIB_OO_ENCAPSULATE_SCALAR_INIT(uint32_t, current_frame, 0)
@@ -82,7 +82,7 @@ private:
 	Rect2D rect;
 
 public:
-	SpriteAnimation (Object *object_, const Rect2D& rect_, std::span<TextureDescriptor> textures, const float frame_duration_);
+	SpriteAnimation (StaticObject *object_, const Rect2D& rect_, std::span<TextureDescriptor> textures, const float frame_duration_);
 
 	void set_scale (const float scale) noexcept;
 	void render (const float dt);

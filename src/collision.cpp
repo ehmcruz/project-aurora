@@ -14,7 +14,7 @@ namespace Game
 
 // ---------------------------------------------------
 
-std::pair<bool, Vector> Collider::check_collision (const Collider& a, const Collider& b)
+std::pair<bool, Vector> check_collision (const Collider& a, const Collider& b)
 {
 	Vector collision_vector;
 
@@ -22,7 +22,7 @@ std::pair<bool, Vector> Collider::check_collision (const Collider& a, const Coll
 	const Vector b_pos = b.object->get_ref_pos() + b.ds;
 
 	const Vector distance = b_pos - a_pos;
-	const Vector target_distance = a.half_size + b.half_size;
+	const Vector target_distance = a.size / fp(2) + b.size / fp(2);
 
 	/*
 		Let's think a bit.
@@ -75,7 +75,7 @@ std::pair<bool, Vector> Collider::check_collision (const Collider& a, const Coll
 
 void Collider::render (const Color& color) const
 {
-	auto cube = WireCube3D(this->half_size * fp(2));
+	auto cube = WireCube3D(this->size);
 
 	renderer->draw_wire_cube3D(cube, this->object->get_ref_pos() + this->ds, color);
 }

@@ -28,11 +28,15 @@ namespace Game
 
 // ---------------------------------------------------
 
-class Map
+class World;
+
+// ---------------------------------------------------
+
+class Map : public Object
 {
 public:
 	struct Vertex {
-		Vector pos;
+		Point pos;
 	};
 
 private:
@@ -40,9 +44,12 @@ private:
 	std::vector<GraphicsVertex> graphics_vertices;
 
 public:
-	Map ();
+	Map (World *world_);
 
-	void render ();
+	void render (const float dt) override final;
+	void update (const float dt) override final;
+
+	float get_z (const Vector2& pos) const noexcept;
 
 	inline Vector2 get_size () const noexcept
 	{
@@ -61,17 +68,18 @@ private:
 	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Color, ambient_light_color, Color::white())
 	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(LightPointDescriptor, light)
 
-	std::list< std::unique_ptr<AbstractObject> > objects;
+	std::list< std::unique_ptr<Object> > objects;
 	std::list< DynamicObject* > dynamic_objects;
 
 public:
 	World ();
 
 	void process_physics (const float dt);
+	void process_map_collision ();
 	void render (const float dt);
 	void process_update (const float dt);
 
-	void add_object (std::unique_ptr<AbstractObject> object)
+	void add_object (std::unique_ptr<Object> object)
 	{
 		this->objects.push_back( std::move(object) );
 	}

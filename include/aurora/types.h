@@ -12,6 +12,9 @@
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
 #include <my-lib/math-vector.h>
+#include <my-lib/math-geometry.h>
+#include <my-lib/math-quaternion.h>
+#include <my-lib/math-matrix.h>
 
 #include <my-game-lib/my-game-lib.h>
 #include <my-game-lib/opengl/opengl.h>
@@ -42,6 +45,8 @@ using MyGlib::Graphics::Opengl::Opengl_TextureDescriptor;
 using GraphicsVertex = MyGlib::Graphics::Opengl::ProgramTriangleTexture::Vertex;
 
 using VectorBasis = Mylib::Math::VectorBasis3<float>;
+using Line = Mylib::Math::Line<float, 3>;
+using Plane = Mylib::Math::Plane<float>;
 
 using Clock = std::chrono::steady_clock;
 using ClockDuration = Clock::duration;

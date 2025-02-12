@@ -30,18 +30,18 @@ class World;
 
 // ---------------------------------------------------
 
-class AbstractObject
+class Object
 {
 	MYLIB_OO_ENCAPSULATE_PTR(World*, world)
 	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(std::string, name)
 
 public:
-	inline AbstractObject (World *world_)
+	inline Object (World *world_)
 		: world(world_)
 	{
 	}
 
-	virtual ~AbstractObject () = default;
+	virtual ~Object () = default;
 
 	virtual void render (const float dt) = 0;
 	virtual void update (const float dt) = 0;
@@ -49,7 +49,7 @@ public:
 
 // ---------------------------------------------------
 
-class Object : public AbstractObject
+class StaticObject : public Object
 {
 	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Point, pos, Point::zero())
 
@@ -57,14 +57,19 @@ protected:
 	std::list<Collider> colliders;
 
 public:
-	inline Object (World *world_)
-		: AbstractObject(world_)
+	inline StaticObject (World *world_)
+		: Object(world_)
 	{
 	}
 
-	inline Object (World *world_, const Point& pos_)
-		: AbstractObject(world_), pos(pos_)
+	inline StaticObject (World *world_, const Point& pos_)
+		: Object(world_), pos(pos_)
 	{
+	}
+
+	inline auto& get_colliders () noexcept
+	{
+		return this->colliders;
 	}
 
 #ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
@@ -74,25 +79,26 @@ public:
 
 // ---------------------------------------------------
 
-class DynamicObject : public Object
+class DynamicObject : public StaticObject
 {
 protected:
 	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, vel, Vector::zero())
 
 public:
 	inline DynamicObject (World *world_)
-		: Object(world_)
+		: StaticObject(world_)
 	{
 	}
 
 	inline DynamicObject (World *world_, const Point& pos_)
-		: Object(world_, pos_)
+		: StaticObject(world_, pos_)
 	{
 	}
 	
 	inline void physics (const float dt) noexcept
 	{
-		this->pos += this->vel * dt;
+		this->pos += this->vel * dt + Config::gravity * dt * dt / fp(2);
+		this->vel += Config::gravity * dt;
 	}
 };
 

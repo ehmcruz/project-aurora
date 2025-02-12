@@ -14,7 +14,7 @@ namespace Game
 
 #ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
 
-void Object::render_colliders (const Color& color) const
+void StaticObject::render_colliders (const Color& color) const
 {
 	for (const Collider& collider : this->colliders)
 		collider.render(color);
@@ -42,7 +42,12 @@ void Object::render_colliders (const Color& color) const
 PlayerObject::PlayerObject (World *world_, const Point& pos_)
 	: DynamicObject(world_, pos_)
 {
-	this->colliders.push_back(Collider(this, Vector::zero(), Vector(1, 1, 1), 0));
+	this->colliders.push_back(Collider {
+		.object = this,
+		.ds = Vector::zero(),
+		.size = Vector(2, 2, 2),
+		.id = 0
+	});
 }
 
 // ---------------------------------------------------
@@ -53,7 +58,7 @@ void PlayerObject::render (const float dt)
 	this->render_colliders(Color::red());
 #endif
 
-	const Quaternion q = Quaternion::rotation(Vector(0, 0, -1), Config::camera_vector);
+	const Quaternion q = Quaternion::rotation(Vector(0, 0, -1), Config::camera_vector) * Quaternion::rotation(Vector(0, 1, 0), Vector(1, 1, 0));
 
 	VectorBasis basis = VectorBasis::default_rh_orthonormal_basis();
 	basis.rotate(q);
@@ -73,7 +78,7 @@ void PlayerObject::render (const float dt)
 
 	using enum Rect2D::VertexPositionIndex;
 
-	const Vector half_size = Vector(0.5, 1, 0);
+	const Vector half_size = Vector(0.8, 1, 0);
 
 	auto& texture = Texture::tree;
 	const Opengl_TextureDescriptor *desc = texture.info->data.get_value<Opengl_TextureDescriptor*>();
@@ -82,9 +87,9 @@ void PlayerObject::render (const float dt)
 
 	// first triangle - vertices
 
-	graphics_vertices[WestSouth].gvertex.pos = -half_size.x * basis.x + -half_size.y * basis.y;
-	graphics_vertices[EastSouth].gvertex.pos = half_size.x * basis.x + -half_size.y * basis.y;
-	graphics_vertices[WestNorth].gvertex.pos = -half_size.x * basis.x + half_size.y * basis.y;
+	graphics_vertices[WestSouth].gvertex.pos = -half_size.x * basis.vx + -half_size.y * basis.vy;
+	graphics_vertices[EastSouth].gvertex.pos = half_size.x * basis.vx + -half_size.y * basis.vy;
+	graphics_vertices[WestNorth].gvertex.pos = -half_size.x * basis.vx + half_size.y * basis.vy;
 
 	// first triangle - tex coords
 
@@ -95,7 +100,7 @@ void PlayerObject::render (const float dt)
 	// second triangle - vertices
 
 	graphics_vertices[EastSouthRepeat].gvertex.pos = graphics_vertices[EastSouth].gvertex.pos;
-	graphics_vertices[EastNorth].gvertex.pos = half_size.x * basis.x + half_size.y * basis.y;
+	graphics_vertices[EastNorth].gvertex.pos = half_size.x * basis.vx + half_size.y * basis.vy;
 	graphics_vertices[WestNorthRepeat].gvertex.pos = graphics_vertices[WestNorth].gvertex.pos;
 
 	// second triangle - tex coords
@@ -107,7 +112,7 @@ void PlayerObject::render (const float dt)
 	// normals and global positions
 
 	for (auto& gv : graphics_vertices) {
-		gv.gvertex.normal = basis.z;
+		gv.gvertex.normal = basis.vz;
 		gv.offset = this->pos;
 	}
 
