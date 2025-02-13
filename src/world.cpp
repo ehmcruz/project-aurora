@@ -15,7 +15,7 @@ namespace Game
 // ---------------------------------------------------
 
 Map::Map (World *world_)
-	: Object(world_, Type::Map, Subtype::Map)
+	: Object(world_, Subtype::Map)
 {
 	this->vertices = Mylib::Matrix<Vertex>(100, 100);
 
@@ -180,23 +180,24 @@ World::World ()
 		Point(0, 0, 1000), Color::white()
 	);
 
-	this->add_static_object( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(5, 5, 3)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(5, 5, 3)) );
 	this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(0, 0, 10)) );
 }
 
 // ---------------------------------------------------
 
-void World::process_physics (const float dt)
+void World::process_physics (const float dt) noexcept
 {
 	for (DynamicObject *obj : this->dynamic_objects)
 		obj->physics(dt);
 
 	this->process_map_collision();
+	this->process_object_collision();
 }
 
 // ---------------------------------------------------
 
-void World::process_map_collision ()
+void World::process_map_collision () noexcept
 {
 	for (DynamicObject *obj : this->dynamic_objects) {
 		Vector& obj_pos = obj->get_ref_pos();
@@ -210,6 +211,37 @@ void World::process_map_collision ()
 			if (altitude < 0) {
 				obj->get_ref_vel().z = 0;
 				obj_pos.z -= altitude;
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------
+
+void World::process_object_collision () noexcept
+{
+	for (DynamicObject *d_obj : this->dynamic_objects) {
+		for (Collider& d_collider : d_obj->get_colliders()) {
+			for (StaticObject *s_obj : this->static_objects) {
+				for (Collider& s_collider : s_obj->get_colliders()) {
+					const auto [colliding, ds] = check_collision(s_collider, d_collider);
+					const auto abs_ds = Mylib::Math::abs(ds);
+
+					if (colliding) {
+						if (abs_ds.x < abs_ds.y && abs_ds.x < abs_ds.z) {
+							d_obj->get_ref_vel().x = 0;
+							d_obj->get_ref_pos().x += ds.x;
+						}
+						else if (abs_ds.y < abs_ds.x && abs_ds.y < abs_ds.z) {
+							d_obj->get_ref_vel().y = 0;
+							d_obj->get_ref_pos().y += ds.y;
+						}
+						else {
+							d_obj->get_ref_vel().z = 0;
+							d_obj->get_ref_pos().z += ds.z;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -243,6 +275,30 @@ void World::process_update (const float dt)
 {
 	for (auto& obj : this->objects)
 		obj->update(dt);
+}
+
+// ---------------------------------------------------
+
+void World::add_static_object_at_ground (std::unique_ptr<StaticObject> object)
+{
+	const float floor_z = this->map->get_z(Vector2(object->get_value_pos().x, object->get_value_pos().y));
+
+	Vector& obj_pos = object->get_ref_pos();
+	const Collider *lowest_z_collider = nullptr;
+	float lowest_z = std::numeric_limits<float>::max(); // in object local coordinates
+
+	for (const Collider& collider : object->get_colliders()) {
+		const float collider_z = obj_pos.z + collider.ds.z - collider.size.z / fp(2);
+
+		if (collider_z < lowest_z) {
+			lowest_z = collider_z;
+			lowest_z_collider = &collider;
+		}
+	}
+
+	obj_pos.z += floor_z - lowest_z;
+
+	this->add_static_object(std::move(object));
 }
 
 // ---------------------------------------------------

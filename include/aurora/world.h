@@ -75,8 +75,9 @@ private:
 public:
 	World ();
 
-	void process_physics (const float dt);
-	void process_map_collision ();
+	void process_physics (const float dt) noexcept;
+	void process_map_collision () noexcept;
+	void process_object_collision () noexcept;
 	void render (const float dt);
 	void process_update (const float dt);
 
@@ -90,6 +91,8 @@ public:
 		this->static_objects.push_back( object.get() );
 		this->add_object( std::move(object) );
 	}
+
+	void add_static_object_at_ground (std::unique_ptr<StaticObject> object);
 
 	void add_dynamic_object (std::unique_ptr<DynamicObject> object)
 	{

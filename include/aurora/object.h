@@ -80,8 +80,8 @@ protected:
 	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(std::string, name)
 
 public:
-	inline Object (World *world_, const Type type_, const Subtype subtype_)
-		: world(world_), type(type_), subtype(subtype_)
+	inline Object (World *world_, const Subtype subtype_)
+		: world(world_), type(get_type(subtype_)), subtype(subtype_)
 	{
 	}
 
@@ -101,13 +101,13 @@ protected:
 	std::list<Collider> colliders;
 
 public:
-	inline StaticObject (World *world_, const Type type_, const Subtype subtype_)
-		: Object(world_, type_, subtype_)
+	inline StaticObject (World *world_, const Subtype subtype_)
+		: Object(world_, subtype_)
 	{
 	}
 
-	inline StaticObject (World *world_, const Type type_, const Subtype subtype_, const Point& pos_)
-		: Object(world_, type_, subtype_), pos(pos_)
+	inline StaticObject (World *world_, const Subtype subtype_, const Point& pos_)
+		: Object(world_, subtype_), pos(pos_)
 	{
 	}
 
@@ -128,8 +128,8 @@ class StaticObjectSprite : public StaticObject
 	MYLIB_OO_ENCAPSULATE_OBJ(Sprite, sprite)
 
 public:
-	StaticObjectSprite (World *world_, const Type type_, const Subtype subtype_, const Point& pos_, const TextureDescriptor& texture_, const Vector2& size_, const Vector2& ds_)
-		: StaticObject(world_, type_, subtype_, pos_), sprite(this, texture_, size_, ds_)
+	StaticObjectSprite (World *world_, const Subtype subtype_, const Point& pos_, const TextureDescriptor& texture_, const Vector2& size_, const Vector2& ds_)
+		: StaticObject(world_, subtype_, pos_), sprite(this, texture_, size_, ds_)
 	{
 	}
 
@@ -145,13 +145,13 @@ protected:
 	MYLIB_OO_ENCAPSULATE_OBJ_INIT_WITH_COPY_MOVE(Vector, vel, Vector::zero())
 
 public:
-	inline DynamicObject (World *world_, const Type type_, const Subtype subtype_)
-		: StaticObject(world_, type_, subtype_)
+	inline DynamicObject (World *world_, const Subtype subtype_)
+		: StaticObject(world_, subtype_)
 	{
 	}
 
-	inline DynamicObject (World *world_, const Type type_, const Subtype subtype_, const Point& pos_)
-		: StaticObject(world_, type_, subtype_, pos_)
+	inline DynamicObject (World *world_, const Subtype subtype_, const Point& pos_)
+		: StaticObject(world_, subtype_, pos_)
 	{
 	}
 	

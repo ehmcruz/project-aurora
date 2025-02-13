@@ -16,10 +16,10 @@ namespace Game
 // ---------------------------------------------------
 
 struct BluePrintStaticObjectSprite {
-	Object::Type type;
 	Object::Subtype subtype;
 	TextureDescriptor& texture;
-	Vector3 size;
+	Vector3 collider_size;
+	Vector2 sprite_size;
 };
 
 // ---------------------------------------------------
@@ -35,10 +35,10 @@ void load_objects ()
 		auto [it, success] = blueprints_static_object_sprite.insert({
 			std::to_underlying(Object::Subtype::Tree_00),
 			{
-				.type = Object::Type::Tree,
 				.subtype = Object::Subtype::Tree_00,
 				.texture = Texture::tree_00,
-				.size = Vector3(2, 2, 2)
+				.collider_size = Vector3(2, 2, 2),
+				.sprite_size = Vector2(2, 2)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for tree_00");
@@ -49,10 +49,10 @@ void load_objects ()
 		auto [it, success] = blueprints_static_object_sprite.insert({
 			std::to_underlying(Object::Subtype::Castle_00),
 			{
-				.type = Object::Type::Castle,
 				.subtype = Object::Subtype::Castle_00,
 				.texture = Texture::castle_00,
-				.size = Vector3(5, 5, 5)
+				.collider_size = Vector3(5.5, 5, 5),
+				.sprite_size = Vector2(7, 7)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for castle_00");
@@ -67,26 +67,24 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 	const Vector& pos
 	)
 {
-	const Object::Type type = Object::get_type(subtype);
 	const auto it = blueprints_static_object_sprite.find({std::to_underlying(subtype)});
-	mylib_assert_exception_msg(it != blueprints_static_object_sprite.end(), "blueprint not found for ", type, " ", subtype);
+	mylib_assert_exception_msg(it != blueprints_static_object_sprite.end(), "blueprint not found for ", subtype);
 
 	const auto& blueprint = it->second;
 
 	std::unique_ptr<StaticObjectSprite> r = std::make_unique<StaticObjectSprite>(
 		world,
-		blueprint.type,
 		blueprint.subtype,
 		pos,
 		blueprint.texture,
-		Vector2(blueprint.size.x, blueprint.size.y),
+		Vector2(blueprint.sprite_size.x, blueprint.sprite_size.y),
 		Vector2(0, 0)
 	);
 
 	r->get_colliders().push_back(Collider {
 		.object = r.get(),
 		.ds = Vector::zero(),
-		.size = blueprint.size,
+		.size = blueprint.collider_size,
 		.id = 0
 	});
 
@@ -125,13 +123,13 @@ void StaticObjectSprite::update (const float dt)
 // ---------------------------------------------------
 
 PlayerObject::PlayerObject (World *world_, const Point& pos_)
-	: DynamicObject(world_, Type::Character, Subtype::Player, pos_),
-	  sprite(this, Texture::tree_00, Vector2(2, 2), Vector2(0, 0))
+	: DynamicObject(world_, Subtype::Player, pos_),
+	  sprite(this, Texture::tree_00, Vector2(2, 4), Vector2(0, 0))
 {
 	this->colliders.push_back(Collider {
 		.object = this,
 		.ds = Vector::zero(),
-		.size = Vector(2, 2, 2),
+		.size = Vector(2, 2, 4),
 		.id = 0
 	});
 }
