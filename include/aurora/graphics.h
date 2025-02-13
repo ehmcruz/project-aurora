@@ -57,8 +57,8 @@ public:
 private:
 	MYLIB_OO_ENCAPSULATE_PTR_INIT(StaticObject*, object, nullptr)
 	MYLIB_OO_ENCAPSULATE_OBJ(TextureDescriptor, texture)
-	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(Vector2, size)
-	MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(Vector2, ds)
+	//MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(Vector2, size)
+	//MYLIB_OO_ENCAPSULATE_OBJ_WITH_COPY_MOVE(Vector2, ds)
 
 	std::array<GraphicsVertex, 6> graphics_vertices; // 2 triangles
 

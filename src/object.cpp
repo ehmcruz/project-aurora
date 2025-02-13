@@ -20,6 +20,7 @@ struct BluePrintStaticObjectSprite {
 	TextureDescriptor& texture;
 	Vector3 collider_size;
 	Vector2 sprite_size;
+	Vector2 sprite_ds;
 };
 
 // ---------------------------------------------------
@@ -38,7 +39,8 @@ void load_objects ()
 				.subtype = Object::Subtype::Tree_00,
 				.texture = Texture::tree_00,
 				.collider_size = Vector3(2, 2, 2),
-				.sprite_size = Vector2(2, 2)
+				.sprite_size = Vector2(2, 2),
+				.sprite_ds = Vector2(0, 0)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for tree_00");
@@ -52,7 +54,8 @@ void load_objects ()
 				.subtype = Object::Subtype::Castle_00,
 				.texture = Texture::castle_00,
 				.collider_size = Vector3(5.5, 5, 5),
-				.sprite_size = Vector2(7, 7)
+				.sprite_size = Vector2(7, 7),
+				.sprite_ds = Vector2(0, 0)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for castle_00");
@@ -77,8 +80,8 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 		blueprint.subtype,
 		pos,
 		blueprint.texture,
-		Vector2(blueprint.sprite_size.x, blueprint.sprite_size.y),
-		Vector2(0, 0)
+		blueprint.sprite_size,
+		blueprint.sprite_ds
 	);
 
 	r->get_colliders().push_back(Collider {

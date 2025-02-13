@@ -180,7 +180,9 @@ World::World ()
 		Point(0, 0, 1000), Color::white()
 	);
 
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(5, 5, 3)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(5, 5, foo)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(1, 10, foo)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 10, foo)) );
 	this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(0, 0, 10)) );
 }
 

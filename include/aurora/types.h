@@ -55,6 +55,10 @@ using ClockTime = Clock::time_point;
 
 // ---------------------------------------------------
 
+inline constexpr float foo = 0;
+
+// ---------------------------------------------------
+
 } // end namespace Game
 
 #endif

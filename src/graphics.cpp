@@ -47,7 +47,7 @@ void load_graphics ()
 
 // ---------------------------------------------------
 
-Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 ds_)
+/*Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 ds_)
 	: object(object_), texture(texture_), size(size_), ds(ds_)
 {
 	using enum Rect2D::VertexPositionIndex;
@@ -86,6 +86,77 @@ Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const 
 
 	for (auto& gv : this->graphics_vertices)
 		gv.gvertex.normal = basis_camera.vz;
+}*/
+
+// ---------------------------------------------------
+
+Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 ds_)
+	: object(object_), texture(texture_) //size(size_), ds(ds_)
+{
+	using enum Rect2D::VertexPositionIndex;
+
+	const Vector half_size = size_ / fp(2);
+
+	const Opengl_TextureDescriptor *desc = this->texture.info->data.get_value<Opengl_TextureDescriptor*>();
+
+	// First, we set coordinates considering that sprite coordinate (0, 0, 0)
+	// is at the center of the sprite.
+
+	this->graphics_vertices[WestSouth].gvertex.pos.x = -half_size.x;
+	this->graphics_vertices[WestSouth].gvertex.pos.y = -half_size.y;
+	this->graphics_vertices[WestSouth].gvertex.pos.z = 0;
+
+	this->graphics_vertices[EastSouth].gvertex.pos.x = half_size.x;
+	this->graphics_vertices[EastSouth].gvertex.pos.y = -half_size.y;
+	this->graphics_vertices[EastSouth].gvertex.pos.z = 0;
+
+	this->graphics_vertices[WestNorth].gvertex.pos.x = -half_size.x;
+	this->graphics_vertices[WestNorth].gvertex.pos.y = half_size.y;
+	this->graphics_vertices[WestNorth].gvertex.pos.z = 0;
+
+	this->graphics_vertices[EastNorth].gvertex.pos.x = half_size.x;
+	this->graphics_vertices[EastNorth].gvertex.pos.y = half_size.y;
+	this->graphics_vertices[EastNorth].gvertex.pos.z = 0;
+
+	// Now, we need to perform a translation to ds.
+
+	const Vector ds = Vector(ds_.x * size_.x, ds_.y * size_.y, 0);
+
+	this->graphics_vertices[WestSouth].gvertex.pos += ds;
+	this->graphics_vertices[EastSouth].gvertex.pos += ds;
+	this->graphics_vertices[WestNorth].gvertex.pos += ds;
+	this->graphics_vertices[EastNorth].gvertex.pos += ds;
+
+	// Now, we need to rotate the sprite.
+	// First, we rotate the sprite around the z axis 45 degress clock-wise.
+	// Then, we rotate the sprite to align it with the camera vector.
+
+	this->graphics_vertices[WestSouth].gvertex.pos.rotate(q_basis_rotation);
+	this->graphics_vertices[EastSouth].gvertex.pos.rotate(q_basis_rotation);
+	this->graphics_vertices[WestNorth].gvertex.pos.rotate(q_basis_rotation);
+	this->graphics_vertices[EastNorth].gvertex.pos.rotate(q_basis_rotation);
+
+	// copy redundant vertices positions
+
+	this->graphics_vertices[EastSouthRepeat].gvertex.pos = this->graphics_vertices[EastSouth].gvertex.pos;
+	this->graphics_vertices[WestNorthRepeat].gvertex.pos = this->graphics_vertices[WestNorth].gvertex.pos;
+
+	// first triangle - tex coords
+
+	this->graphics_vertices[WestSouth].tex_coords = Vector(desc->tex_coords[LeftBottom].x, desc->tex_coords[LeftBottom].y, desc->atlas->texture_depth);
+	this->graphics_vertices[EastSouth].tex_coords = Vector(desc->tex_coords[RightBottom].x, desc->tex_coords[RightBottom].y, desc->atlas->texture_depth);
+	this->graphics_vertices[WestNorth].tex_coords = Vector(desc->tex_coords[LeftTop].x, desc->tex_coords[LeftTop].y, desc->atlas->texture_depth);
+
+	// second triangle - tex coords
+
+	this->graphics_vertices[EastSouthRepeat].tex_coords = this->graphics_vertices[EastSouth].tex_coords;
+	this->graphics_vertices[EastNorth].tex_coords = Vector(desc->tex_coords[RightTop].x, desc->tex_coords[RightTop].y, desc->atlas->texture_depth);
+	this->graphics_vertices[WestNorthRepeat].tex_coords = this->graphics_vertices[WestNorth].tex_coords;
+
+	// normals
+
+	for (auto& gv : this->graphics_vertices)
+		gv.gvertex.normal = basis_camera.vz;
 }
 
 // ---------------------------------------------------
@@ -101,6 +172,7 @@ void Sprite::render ()
 	const uint32_t n_vertices = this->graphics_vertices.size();
 	auto vertices = program.alloc_vertices(n_vertices);
 
+	// doing counter clock-wise
 	for (uint32_t i = 0; i < n_vertices; i++)
 		vertices[i] = graphics_vertices[i];
 }
