@@ -31,6 +31,21 @@ void quit_callback (const MyGlib::Event::Quit::Type& event)
 
 // ---------------------------------------------------
 
+void key_down_callback (const MyGlib::Event::KeyDown::Type& event)
+{
+	switch (event.key_code)
+	{
+		case SDLK_ESCAPE:
+			alive = false;
+		break;
+	
+		default:
+			break;
+	}
+}
+
+// ---------------------------------------------------
+
 //ObjectSprite *tree;
 
 void render (const float dt)
@@ -54,16 +69,16 @@ int main (const int argc, const char **argv)
 	game_lib = &MyGlib::Lib::init({
 		.graphics_type = MyGlib::Graphics::Manager::Type::Opengl,
 		.window_name = "Project Aurora",
-		.window_width_px = 1200,
-		.window_height_px = 800,
-		//.fullscreen = true
-		.fullscreen = false
+		.window_width_px = 1920,
+		.window_height_px = 1080,
+		.fullscreen = true
 	});
 	event_manager = &game_lib->get_event_manager();
 	audio_manager = &game_lib->get_audio_manager();
 	renderer = &game_lib->get_graphics_manager();
 
 	event_manager->quit().subscribe( Mylib::Trigger::make_callback_function<MyGlib::Event::Quit::Type>(&quit_callback) );
+	event_manager->key_down().subscribe( Mylib::Trigger::make_callback_function<MyGlib::Event::KeyDown::Type>(&key_down_callback) );
 
 	dprintln("SDL initialized!");
 

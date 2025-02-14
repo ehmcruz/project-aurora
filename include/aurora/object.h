@@ -168,7 +168,7 @@ public:
 class PlayerObject : public DynamicObject
 {
 private:
-	Sprite sprite;
+	SpriteAnimation animation;
 
 public:
 	PlayerObject (World *world_, const Point& pos_);

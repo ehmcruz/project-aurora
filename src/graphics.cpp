@@ -25,7 +25,7 @@ static void load_textures ()
 	renderer->begin_texture_loading();
 
 	group_grass = renderer->load_texture("assets/grass.png");
-	main_char = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir1.png");
+	main_char = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir1-cropped.png");
 	tree_00 = renderer->load_texture("assets/tree_00.png");
 	castle_00 = renderer->load_texture("assets/castle_00.png");
 	
@@ -33,6 +33,7 @@ static void load_textures ()
 
 	matrix_grass = renderer->split_texture(group_grass, 224 / 16, 400 / 16);
 	grass = matrix_grass[2, 2];
+	matrix_main_char = renderer->split_texture(main_char, 3, 3);
 }
 
 // ---------------------------------------------------
@@ -224,24 +225,16 @@ void Sprite::render ()
 
 // ---------------------------------------------------
 
-SpriteAnimation::SpriteAnimation (StaticObject *object_, const Rect2D& rect_, std::span<TextureDescriptor> textures, const float frame_duration_)
-	: object(object_), frame_duration(frame_duration_), rect(rect_)
+SpriteAnimation::SpriteAnimation (StaticObject *object_, std::span<TextureDescriptor> textures, const Vector2 size_, const Vector2 source_anchor_, const Vector3& dest_anchor_, const float frame_duration_)
+	: object(object_), frame_duration(frame_duration_)
 {
-//	dprintln("SpriteAnimation::SpriteAnimation");
-//	dprintln("textures.size() = ", textures.size());
+	dprintln("SpriteAnimation::SpriteAnimation");
+	dprintln("textures.size() = ", textures.size());
 
 	this->sprites.reserve(textures.size());
 
-//	for (const auto& texture : textures)
-//		this->sprites.push_back(Sprite(object_, rect_, texture));
-}
-
-// ---------------------------------------------------
-
-void SpriteAnimation::set_scale (const float scale) noexcept
-{
-//	for (auto& sprite : this->sprites)
-//		sprite.set_scale(scale);
+	for (const auto& texture : textures)
+		this->sprites.push_back(Sprite(object_, texture, size_, source_anchor_, dest_anchor_));
 }
 
 // ---------------------------------------------------

@@ -34,7 +34,7 @@ void load_objects ()
 {
 	// tree_00
 	{
-		auto [it, success] = blueprints_static_object_sprite.insert({
+		const auto [it, success] = blueprints_static_object_sprite.insert({
 			std::to_underlying(Object::Subtype::Tree_00),
 			{
 				.subtype = Object::Subtype::Tree_00,
@@ -50,7 +50,7 @@ void load_objects ()
 
 	// castle_00
 	{
-		auto [it, success] = blueprints_static_object_sprite.insert({
+		const auto [it, success] = blueprints_static_object_sprite.insert({
 			std::to_underlying(Object::Subtype::Castle_00),
 			{
 				.subtype = Object::Subtype::Castle_00,
@@ -131,12 +131,12 @@ void StaticObjectSprite::update (const float dt)
 
 PlayerObject::PlayerObject (World *world_, const Point& pos_)
 	: DynamicObject(world_, Subtype::Player, pos_),
-	  sprite(this, Texture::tree_00, Vector2(2, 4), Vector2(0, 0), Vector3(0, 0, 0))
+	  animation(this, Texture::matrix_main_char.to_span(), Vector2(2, 3), Vector2(0, -0.5), Vector3(0, 0, -1.5), 0.1)
 {
 	this->colliders.push_back(Collider {
 		.object = this,
 		.ds = Vector::zero(),
-		.size = Vector(2, 2, 4),
+		.size = Vector(2, 2, 3),
 		.id = 0
 	});
 }
@@ -149,7 +149,7 @@ void PlayerObject::render (const float dt)
 	this->render_colliders(Color::red());
 #endif
 
-	this->sprite.render();
+	this->animation.render(dt);
 }
 
 // ---------------------------------------------------

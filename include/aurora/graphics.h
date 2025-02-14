@@ -34,6 +34,7 @@ namespace Texture
 	inline Mylib::Matrix<TextureDescriptor> matrix_grass;
 	inline TextureDescriptor grass;
 	inline TextureDescriptor main_char;
+	inline Mylib::Matrix<TextureDescriptor> matrix_main_char;
 	inline TextureDescriptor tree_00;
 	inline TextureDescriptor castle_00;
 }
@@ -83,9 +84,8 @@ private:
 	Rect2D rect;
 
 public:
-	SpriteAnimation (StaticObject *object_, const Rect2D& rect_, std::span<TextureDescriptor> textures, const float frame_duration_);
+	SpriteAnimation (StaticObject *object_, std::span<TextureDescriptor> textures, const Vector2 size_, const Vector2 source_anchor_, const Vector3& dest_anchor_, const float frame_duration_);
 
-	void set_scale (const float scale) noexcept;
 	void render (const float dt);
 };
 
