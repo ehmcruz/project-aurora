@@ -20,6 +20,10 @@ inline MyGlib::Graphics::Manager *renderer = nullptr;
 
 // ---------------------------------------------------
 
+inline constexpr float foo = 0;
+
+// ---------------------------------------------------
+
 } // end namespace Game
 
 #endif

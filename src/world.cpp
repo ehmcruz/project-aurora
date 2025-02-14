@@ -180,10 +180,10 @@ World::World ()
 		Point(0, 0, 1000), Color::white()
 	);
 
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(5, 5, foo)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(10, 10, foo)) );
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(1, 9, foo)) );
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 9, foo)) );
-	this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(5, 2, 10)) );
+	this->player = this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(1, 1, 3)) );
 }
 
 // ---------------------------------------------------
@@ -253,12 +253,14 @@ void World::process_object_collision () noexcept
 
 void World::render (const float dt)
 {
+	this->camera_pos = this->player->get_ref_pos() - Config::camera_vector * fp(50);
+
 	renderer->setup_render_3D( MyGlib::Graphics::RenderArgs3D {
 		.world_camera_pos = this->camera_pos,
-		.world_camera_target = this->camera_pos + Config::camera_vector,
+		.world_camera_target = this->player->get_ref_pos(),
 		.world_camera_up = Config::camera_up,
 		.projection = MyGlib::Graphics::OrthogonalProjectionInfo {
-			.view_width = 15,
+			.view_width = 30,
 			.z_near = 0.1,
 			.z_far = 100,
 		},
@@ -281,7 +283,7 @@ void World::process_update (const float dt)
 
 // ---------------------------------------------------
 
-void World::add_static_object_at_ground (std::unique_ptr<StaticObject> object)
+StaticObject* World::add_static_object_at_ground (std::unique_ptr<StaticObject> object)
 {
 	const float floor_z = this->map->get_z(Vector2(object->get_value_pos().x, object->get_value_pos().y));
 
@@ -300,7 +302,7 @@ void World::add_static_object_at_ground (std::unique_ptr<StaticObject> object)
 
 	obj_pos.z += floor_z - lowest_z;
 
-	this->add_static_object(std::move(object));
+	return this->add_static_object(std::move(object));
 }
 
 // ---------------------------------------------------

@@ -131,12 +131,29 @@ void StaticObjectSprite::update (const float dt)
 
 PlayerObject::PlayerObject (World *world_, const Point& pos_)
 	: DynamicObject(world_, Subtype::Player, pos_),
-	  animation(this, Texture::matrix_main_char.to_span(), Vector2(2, 3), Vector2(0, -0.5), Vector3(0, 0, -1.5), 0.1)
+	  animations(
+	      this,
+	      {
+	          Texture::matrix_main_char_south.to_span(),
+			  Texture::matrix_main_char_south_west.to_span(),
+			  Texture::matrix_main_char_west.to_span(),
+			  Texture::matrix_main_char_north_west.to_span(),
+			  Texture::matrix_main_char_north.to_span(),
+			  Texture::matrix_main_char_north_east.to_span(),
+			  Texture::matrix_main_char_east.to_span(),
+			  Texture::matrix_main_char_south_east.to_span()
+	      },
+	      Vector2(2, 2),
+	      Vector2(0, -0.5),
+	      Vector3(0, 0, -1),
+	      0.05,
+	      Direction::South
+	  )
 {
 	this->colliders.push_back(Collider {
 		.object = this,
 		.ds = Vector::zero(),
-		.size = Vector(2, 2, 3),
+		.size = Vector(1, 1, 2),
 		.id = 0
 	});
 }
@@ -149,28 +166,75 @@ void PlayerObject::render (const float dt)
 	this->render_colliders(Color::red());
 #endif
 
-	this->animation.render(dt);
+	this->animations.render(dt);
 }
 
 // ---------------------------------------------------
 
 void PlayerObject::update (const float dt)
 {
-	constexpr float speed = 2.0;
+	constexpr float speed = 5.0;
 
-	if (event_manager->is_key_down(SDL_SCANCODE_RIGHT))
-		this->vel.x = speed;
-	else if (event_manager->is_key_down(SDL_SCANCODE_LEFT))
-		this->vel.x = -speed;
-	else
+	constexpr auto key_down = SDL_SCANCODE_DOWN;
+	constexpr auto key_up = SDL_SCANCODE_UP;
+	constexpr auto key_left = SDL_SCANCODE_LEFT;
+	constexpr auto key_right = SDL_SCANCODE_RIGHT;
+
+	bool stop = false;
+
+	if (event_manager->is_key_down(key_down)) {
+		if (event_manager->is_key_down(key_right))
+			this->direction = Direction::SouthEast;
+		else if (event_manager->is_key_down(key_left))
+			this->direction = Direction::SouthWest;
+		else
+			this->direction = Direction::South;
+	}
+	else if (event_manager->is_key_down(key_up)) {
+		if (event_manager->is_key_down(key_right))
+			this->direction = Direction::NorthEast;
+		else if (event_manager->is_key_down(key_left))
+			this->direction = Direction::NorthWest;
+		else
+			this->direction = Direction::North;
+	}
+	else {
+		if (event_manager->is_key_down(key_right))
+			this->direction = Direction::East;
+		else if (event_manager->is_key_down(key_left))
+			this->direction = Direction::West;
+		else {
+			// keep last direction
+			stop = true;
+		}
+	}
+
+	constexpr std::array<Vector2, 8> velocity_dir = {
+		Vector2(-1, -1),    // South
+		Vector2(-1, 0),     // SouthWest
+		Vector2(-1, 1),     // West
+		Vector2(0, 1),      // NorthWest
+		Vector2(1, 1),      // North
+		Vector2(1, 0),      // NorthEast
+		Vector2(1, -1),     // East
+		Vector2(0, -1)      // SouthEast
+	};
+
+	if (!stop) {
+		const Vector2 new_vel = Mylib::Math::with_length( velocity_dir[ std::to_underlying(this->direction) ], speed);
+		this->vel.x = new_vel.x;
+		this->vel.y = new_vel.y;
+
+		this->animations.set_current_animation(this->direction);
+	}
+	else {
 		this->vel.x = 0;
-	
-	if (event_manager->is_key_down(SDL_SCANCODE_UP))
-		this->vel.y = speed;
-	else if (event_manager->is_key_down(SDL_SCANCODE_DOWN))
-		this->vel.y = -speed;
-	else
 		this->vel.y = 0;
+
+		this->animations.stop();
+	}
+	
+	
 }
 
 // ---------------------------------------------------
@@ -196,6 +260,21 @@ const char* enum_class_to_str (const Object::Subtype value)
 		#define _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(TYPE, V) #V,
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUES_
 		#undef _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_
+	});
+
+	mylib_assert_exception_msg(std::to_underlying(value) < strs.size(), "invalid enum class value ", std::to_underlying(value))
+
+	return strs[ std::to_underlying(value) ];
+}
+
+// ---------------------------------------------------
+
+const char* enum_class_to_str (const Object::Direction value)
+{
+	static constexpr auto strs = std::to_array<const char*>({
+		#define _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(V) #V,
+		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUES_
+		#undef _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_
 	});
 
 	mylib_assert_exception_msg(std::to_underlying(value) < strs.size(), "invalid enum class value ", std::to_underlying(value))

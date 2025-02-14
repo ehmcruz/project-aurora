@@ -72,6 +72,8 @@ private:
 	std::list< StaticObject* > static_objects;
 	std::list< DynamicObject* > dynamic_objects;
 
+	DynamicObject* player;
+
 public:
 	World ();
 
@@ -81,23 +83,29 @@ public:
 	void render (const float dt);
 	void process_update (const float dt);
 
-	void add_object (std::unique_ptr<Object> object)
+	Object* add_object (std::unique_ptr<Object> object)
 	{
+		Object *obj = object.get();
 		this->objects.push_back( std::move(object) );
+		return obj;
 	}
 
-	void add_static_object (std::unique_ptr<StaticObject> object)
+	StaticObject* add_static_object (std::unique_ptr<StaticObject> object)
 	{
-		this->static_objects.push_back( object.get() );
+		StaticObject *obj = object.get();
+		this->static_objects.push_back(obj);
 		this->add_object( std::move(object) );
+		return obj;
 	}
 
-	void add_static_object_at_ground (std::unique_ptr<StaticObject> object);
+	StaticObject* add_static_object_at_ground (std::unique_ptr<StaticObject> object);
 
-	void add_dynamic_object (std::unique_ptr<DynamicObject> object)
+	DynamicObject* add_dynamic_object (std::unique_ptr<DynamicObject> object)
 	{
-		this->dynamic_objects.push_back( object.get() );
+		DynamicObject *obj = object.get();
+		this->dynamic_objects.push_back(obj);
 		this->add_object( std::move(object) );
+		return obj;
 	}
 };
 

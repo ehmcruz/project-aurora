@@ -25,15 +25,31 @@ static void load_textures ()
 	renderer->begin_texture_loading();
 
 	group_grass = renderer->load_texture("assets/grass.png");
-	main_char = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir1-cropped.png");
 	tree_00 = renderer->load_texture("assets/tree_00.png");
 	castle_00 = renderer->load_texture("assets/castle_00.png");
+
+	main_char_south = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_south-cropped.png");
+	main_char_south_west = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_south_west-cropped.png");
+	main_char_west = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_west-cropped.png");
+	main_char_north_west = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_north_west-cropped.png");
+	main_char_north = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_north-cropped.png");
+	main_char_north_east = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_north_east-cropped.png");
+	main_char_east = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_east-cropped.png");
+	main_char_south_east = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_south_east-cropped.png");
 	
 	renderer->end_texture_loading();
 
 	matrix_grass = renderer->split_texture(group_grass, 224 / 16, 400 / 16);
 	grass = matrix_grass[2, 2];
-	matrix_main_char = renderer->split_texture(main_char, 3, 3);
+
+	matrix_main_char_south = renderer->split_texture(main_char_south, 3, 3);
+	matrix_main_char_south_west = renderer->split_texture(main_char_south_west, 3, 3);
+	matrix_main_char_west = renderer->split_texture(main_char_west, 3, 3);
+	matrix_main_char_north_west = renderer->split_texture(main_char_north_west, 3, 3);
+	matrix_main_char_north = renderer->split_texture(main_char_north, 3, 3);
+	matrix_main_char_north_east = renderer->split_texture(main_char_north_east, 3, 3);
+	matrix_main_char_east = renderer->split_texture(main_char_east, 3, 3);
+	matrix_main_char_south_east = renderer->split_texture(main_char_south_east, 3, 3);
 }
 
 // ---------------------------------------------------
@@ -45,49 +61,6 @@ void load_graphics ()
 	basis_camera = VectorBasis::default_rh_orthonormal_basis();
 	basis_camera.rotate(q_camera_rotation);
 }
-
-// ---------------------------------------------------
-
-/*Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 ds_)
-	: object(object_), texture(texture_), size(size_), ds(ds_)
-{
-	using enum Rect2D::VertexPositionIndex;
-
-	const Vector2 half_size = this->size / fp(2);
-
-	const Opengl_TextureDescriptor *desc = this->texture.info->data.get_value<Opengl_TextureDescriptor*>();
-
-	// doing counter clock-wise
-
-	// first triangle - vertices
-
-	this->graphics_vertices[WestSouth].gvertex.pos = -half_size.x * basis_camera.vx + -half_size.y * basis_camera.vy;
-	this->graphics_vertices[EastSouth].gvertex.pos = half_size.x * basis_camera.vx + -half_size.y * basis_camera.vy;
-	this->graphics_vertices[WestNorth].gvertex.pos = -half_size.x * basis_camera.vx + half_size.y * basis_camera.vy;
-
-	// first triangle - tex coords
-
-	this->graphics_vertices[WestSouth].tex_coords = Vector(desc->tex_coords[LeftBottom].x, desc->tex_coords[LeftBottom].y, desc->atlas->texture_depth);
-	this->graphics_vertices[EastSouth].tex_coords = Vector(desc->tex_coords[RightBottom].x, desc->tex_coords[RightBottom].y, desc->atlas->texture_depth);
-	this->graphics_vertices[WestNorth].tex_coords = Vector(desc->tex_coords[LeftTop].x, desc->tex_coords[LeftTop].y, desc->atlas->texture_depth);
-
-	// second triangle - vertices
-
-	this->graphics_vertices[EastSouthRepeat].gvertex.pos = this->graphics_vertices[EastSouth].gvertex.pos;
-	this->graphics_vertices[EastNorth].gvertex.pos = half_size.x * basis_camera.vx + half_size.y * basis_camera.vy;
-	this->graphics_vertices[WestNorthRepeat].gvertex.pos = this->graphics_vertices[WestNorth].gvertex.pos;
-
-	// second triangle - tex coords
-
-	this->graphics_vertices[EastSouthRepeat].tex_coords = this->graphics_vertices[EastSouth].tex_coords;
-	this->graphics_vertices[EastNorth].tex_coords = Vector(desc->tex_coords[RightTop].x, desc->tex_coords[RightTop].y, desc->atlas->texture_depth);
-	this->graphics_vertices[WestNorthRepeat].tex_coords = this->graphics_vertices[WestNorth].tex_coords;
-
-	// normals
-
-	for (auto& gv : this->graphics_vertices)
-		gv.gvertex.normal = basis_camera.vz;
-}*/
 
 // ---------------------------------------------------
 
@@ -241,14 +214,16 @@ SpriteAnimation::SpriteAnimation (StaticObject *object_, std::span<TextureDescri
 
 void SpriteAnimation::render (const float dt)
 {
-	this->current_frame_time += dt;
+	if (this->stopped == false) {
+		this->current_frame_time += dt;
 
-	if (this->current_frame_time >= this->frame_duration) {
-		this->current_frame_time = 0;
-		this->current_frame++;
+		if (this->current_frame_time >= this->frame_duration) {
+			this->current_frame_time = 0;
+			this->current_frame++;
 
-		if (this->current_frame >= this->sprites.size())
-			this->current_frame = 0;
+			if (this->current_frame >= this->sprites.size())
+				this->current_frame = 0;
+		}
 	}
 
 	this->sprites[this->current_frame].render();

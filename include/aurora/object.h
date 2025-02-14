@@ -60,6 +60,22 @@ public:
 		#undef _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_
 	};
 
+	#define _MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUES_ \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(South) \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(SouthWest) \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(West) \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(NorthWest) \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(North) \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(NorthEast) \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(East) \
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(SouthEast)
+
+	enum class Direction : uint32_t {
+		#define _MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(V) V,
+		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUES_
+		#undef _MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_
+	};
+
 private:
 	inline static constexpr Type types__[] = {
 		#define _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(TYPE, V) Type::TYPE,
@@ -168,7 +184,8 @@ public:
 class PlayerObject : public DynamicObject
 {
 private:
-	SpriteAnimation animation;
+	SpriteAnimationArray<8, Direction> animations;
+	MYLIB_OO_ENCAPSULATE_SCALAR_INIT_READONLY(Direction, direction, Direction::South)
 
 public:
 	PlayerObject (World *world_, const Point& pos_);
@@ -191,6 +208,7 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 
 const char* enum_class_to_str (const Object::Type value);
 const char* enum_class_to_str (const Object::Subtype value);
+const char* enum_class_to_str (const Object::Direction value);
 
 // ---------------------------------------------------
 
@@ -201,6 +219,12 @@ inline std::ostream& operator << (std::ostream& out, const Object::Type value)
 }
 
 inline std::ostream& operator << (std::ostream& out, const Object::Subtype value)
+{
+	out << enum_class_to_str(value);
+	return out;
+}
+
+inline std::ostream& operator << (std::ostream& out, const Object::Direction value)
 {
 	out << enum_class_to_str(value);
 	return out;
