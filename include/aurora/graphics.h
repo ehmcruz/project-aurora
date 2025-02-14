@@ -63,7 +63,7 @@ private:
 	std::array<GraphicsVertex, 6> graphics_vertices; // 2 triangles
 
 public:
-	Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 ds_);
+	Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 source_anchor_, const Vector3& dest_anchor_);
 
 	void render ();
 };

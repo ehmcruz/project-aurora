@@ -11,8 +11,9 @@ namespace Game
 
 // ---------------------------------------------------
 
-static Quaternion q_basis_rotation;
-static Quaternion q_sprite_rotation;
+static const Quaternion q_rotation_45_degrees = Quaternion::rotation(Vector(0, 1, 0), Vector(1, 1, 0));
+static const Quaternion q_rotation_to_camera_vector = Quaternion::rotation(Vector(0, 0, -1), Config::camera_vector);
+static const Quaternion q_camera_rotation = q_rotation_to_camera_vector * q_rotation_45_degrees;
 static VectorBasis basis_camera; // z is the camera vector in the opposite direction
 
 // ---------------------------------------------------
@@ -40,9 +41,8 @@ void load_graphics ()
 {
 	load_textures();
 
-	q_basis_rotation = Quaternion::rotation(Vector(0, 0, -1), Config::camera_vector) * Quaternion::rotation(Vector(0, 1, 0), Vector(1, 1, 0));
 	basis_camera = VectorBasis::default_rh_orthonormal_basis();
-	basis_camera.rotate(q_basis_rotation);
+	basis_camera.rotate(q_camera_rotation);
 }
 
 // ---------------------------------------------------
@@ -90,7 +90,7 @@ void load_graphics ()
 
 // ---------------------------------------------------
 
-Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 ds_)
+Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 source_anchor_, const Vector3& dest_anchor_)
 	: object(object_), texture(texture_) //size(size_), ds(ds_)
 {
 	using enum Rect2D::VertexPositionIndex;
@@ -118,23 +118,46 @@ Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const 
 	this->graphics_vertices[EastNorth].gvertex.pos.y = half_size.y;
 	this->graphics_vertices[EastNorth].gvertex.pos.z = 0;
 
-	// Now, we need to perform a translation to ds.
+	// Now, we need to perform a translation to source_anchor.
 
-	const Vector ds = Vector(ds_.x * size_.x, ds_.y * size_.y, 0);
+	const Vector source_anchor = Vector(source_anchor_.x * size_.x, source_anchor_.y * size_.y, 0);
 
-	this->graphics_vertices[WestSouth].gvertex.pos += ds;
-	this->graphics_vertices[EastSouth].gvertex.pos += ds;
-	this->graphics_vertices[WestNorth].gvertex.pos += ds;
-	this->graphics_vertices[EastNorth].gvertex.pos += ds;
+	this->graphics_vertices[WestSouth].gvertex.pos -= source_anchor;
+	this->graphics_vertices[EastSouth].gvertex.pos -= source_anchor;
+	this->graphics_vertices[WestNorth].gvertex.pos -= source_anchor;
+	this->graphics_vertices[EastNorth].gvertex.pos -= source_anchor;
 
 	// Now, we need to rotate the sprite.
 	// First, we rotate the sprite around the z axis 45 degress clock-wise.
 	// Then, we rotate the sprite to align it with the camera vector.
 
-	this->graphics_vertices[WestSouth].gvertex.pos.rotate(q_basis_rotation);
-	this->graphics_vertices[EastSouth].gvertex.pos.rotate(q_basis_rotation);
-	this->graphics_vertices[WestNorth].gvertex.pos.rotate(q_basis_rotation);
-	this->graphics_vertices[EastNorth].gvertex.pos.rotate(q_basis_rotation);
+#if 1
+	this->graphics_vertices[WestSouth].gvertex.pos.rotate(q_camera_rotation);
+	this->graphics_vertices[EastSouth].gvertex.pos.rotate(q_camera_rotation);
+	this->graphics_vertices[WestNorth].gvertex.pos.rotate(q_camera_rotation);
+	this->graphics_vertices[EastNorth].gvertex.pos.rotate(q_camera_rotation);
+#endif
+
+#if 0
+	this->graphics_vertices[WestSouth].gvertex.pos.rotate(q_rotation_45_degrees);
+	this->graphics_vertices[EastSouth].gvertex.pos.rotate(q_rotation_45_degrees);
+	this->graphics_vertices[WestNorth].gvertex.pos.rotate(q_rotation_45_degrees);
+	this->graphics_vertices[EastNorth].gvertex.pos.rotate(q_rotation_45_degrees);
+#endif
+
+#if 0
+	this->graphics_vertices[WestSouth].gvertex.pos.rotate(q_rotation_to_camera_vector);
+	this->graphics_vertices[EastSouth].gvertex.pos.rotate(q_rotation_to_camera_vector);
+	this->graphics_vertices[WestNorth].gvertex.pos.rotate(q_rotation_to_camera_vector);
+	this->graphics_vertices[EastNorth].gvertex.pos.rotate(q_rotation_to_camera_vector);
+#endif
+
+	// Now, we need to perform a translation to dest_anchor.
+
+	this->graphics_vertices[WestSouth].gvertex.pos += dest_anchor_;
+	this->graphics_vertices[EastSouth].gvertex.pos += dest_anchor_;
+	this->graphics_vertices[WestNorth].gvertex.pos += dest_anchor_;
+	this->graphics_vertices[EastNorth].gvertex.pos += dest_anchor_;
 
 	// copy redundant vertices positions
 
@@ -175,6 +198,28 @@ void Sprite::render ()
 	// doing counter clock-wise
 	for (uint32_t i = 0; i < n_vertices; i++)
 		vertices[i] = graphics_vertices[i];
+
+	if constexpr (Config::render_sprite_box) {
+		MyGlib::Graphics::Opengl::ProgramLineColor& program = *opengl_renderer->get_program_line_color();
+		constexpr uint32_t n_vertices = 8;
+		auto vertices = program.alloc_vertices(n_vertices);
+
+		// counter clock-wise
+
+		vertices[0].gvertex = this->graphics_vertices[WestSouth].gvertex;
+		vertices[1].gvertex = this->graphics_vertices[WestNorth].gvertex;
+		vertices[2].gvertex = this->graphics_vertices[WestNorth].gvertex;
+		vertices[3].gvertex = this->graphics_vertices[EastNorth].gvertex;
+		vertices[4].gvertex = this->graphics_vertices[EastNorth].gvertex;
+		vertices[5].gvertex = this->graphics_vertices[EastSouth].gvertex;
+		vertices[6].gvertex = this->graphics_vertices[EastSouth].gvertex;
+		vertices[7].gvertex = this->graphics_vertices[WestSouth].gvertex;
+
+		for (auto& vertex : vertices) {
+			vertex.offset = this->object->get_ref_pos();
+			vertex.color = Color::blue();
+		}
+	}
 }
 
 // ---------------------------------------------------

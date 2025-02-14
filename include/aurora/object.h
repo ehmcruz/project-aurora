@@ -128,8 +128,9 @@ class StaticObjectSprite : public StaticObject
 	MYLIB_OO_ENCAPSULATE_OBJ(Sprite, sprite)
 
 public:
-	StaticObjectSprite (World *world_, const Subtype subtype_, const Point& pos_, const TextureDescriptor& texture_, const Vector2& size_, const Vector2& ds_)
-		: StaticObject(world_, subtype_, pos_), sprite(this, texture_, size_, ds_)
+	StaticObjectSprite (World *world_, const Subtype subtype_, const Point& pos_, const TextureDescriptor& texture_, const Vector2& size_, const Vector2 source_anchor_, const Vector3 dest_anchor_)
+		: StaticObject(world_, subtype_, pos_),
+		  sprite(this, texture_, size_, source_anchor_, dest_anchor_)
 	{
 	}
 

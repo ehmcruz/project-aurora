@@ -20,7 +20,8 @@ struct BluePrintStaticObjectSprite {
 	TextureDescriptor& texture;
 	Vector3 collider_size;
 	Vector2 sprite_size;
-	Vector2 sprite_ds;
+	Vector2 sprite_source_anchor;
+	Vector3 sprite_dest_anchor;
 };
 
 // ---------------------------------------------------
@@ -40,7 +41,8 @@ void load_objects ()
 				.texture = Texture::tree_00,
 				.collider_size = Vector3(2, 2, 2),
 				.sprite_size = Vector2(2, 2),
-				.sprite_ds = Vector2(0, 0)
+				.sprite_source_anchor = Vector2(0, -0.5),
+				.sprite_dest_anchor = Vector3(0, 0, -1)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for tree_00");
@@ -53,9 +55,10 @@ void load_objects ()
 			{
 				.subtype = Object::Subtype::Castle_00,
 				.texture = Texture::castle_00,
-				.collider_size = Vector3(5.5, 5, 5),
+				.collider_size = Vector3(5, 5, 5),
 				.sprite_size = Vector2(7, 7),
-				.sprite_ds = Vector2(0, 0)
+				.sprite_source_anchor = Vector2(0, -0.5),
+				.sprite_dest_anchor = Vector3(-2.5, -2.5, -2.5)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for castle_00");
@@ -81,7 +84,8 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 		pos,
 		blueprint.texture,
 		blueprint.sprite_size,
-		blueprint.sprite_ds
+		blueprint.sprite_source_anchor,
+		blueprint.sprite_dest_anchor
 	);
 
 	r->get_colliders().push_back(Collider {
@@ -127,7 +131,7 @@ void StaticObjectSprite::update (const float dt)
 
 PlayerObject::PlayerObject (World *world_, const Point& pos_)
 	: DynamicObject(world_, Subtype::Player, pos_),
-	  sprite(this, Texture::tree_00, Vector2(2, 4), Vector2(0, 0))
+	  sprite(this, Texture::tree_00, Vector2(2, 4), Vector2(0, 0), Vector3(0, 0, 0))
 {
 	this->colliders.push_back(Collider {
 		.object = this,

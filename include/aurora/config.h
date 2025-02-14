@@ -28,6 +28,8 @@ namespace Config
 	inline constexpr bool render_colliders = false;
 #endif
 
+inline constexpr bool render_sprite_box = true;
+
 // ---------------------------------------------------
 
 // isometric view
