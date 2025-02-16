@@ -87,7 +87,7 @@ int main (const int argc, const char **argv)
 	load_objects();
 
 	music = audio_manager->load_music("assets/medieval-background-196571.mp3", MyGlib::Audio::Format::MP3);
-	audio_manager->play_audio(music);
+	//audio_manager->play_audio(music);
 
 	//tree = new ObjectSprite(nullptr, Rect2D(5, 5), Texture::grass);
 	//tree->set_pos(Vector(2, 2, 0));

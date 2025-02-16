@@ -17,12 +17,84 @@ namespace Game
 Map::Map (World *world_)
 	: Object(world_, Subtype::Map)
 {
-	this->vertices = Mylib::Matrix<Vertex>(100, 100);
+	constexpr uint32_t map_tile_n = 20;
+
+	constexpr char vertex_map[(map_tile_n+1)*(map_tile_n+1)+1] =
+		"               123333"
+		"               123333"
+		"               123333"
+		"               122222"
+		"               111111"
+		"                ---  "
+		"                ---  "
+		"                ---  "
+		"                ---  "
+		"                ---  "
+		"                ---  "
+		"                ---  "
+		"                ---  "
+		"               ---   "
+		"              ---    "
+		"             ---     "
+		"            ---      "
+		"            ---      "
+		"            ---      "
+		"            ---      "
+		"            ---      ";
+
+	constexpr char tile_map[(map_tile_n)*(map_tile_n)+1] =
+		"                    "
+		"                    "
+		"                    "
+		"                    "
+		"                    "
+		"                ww  "
+		"                ww  "
+		"                ww  "
+		"                ww  "
+		"                ww  "
+		"                ww  "
+		"                ww  "
+		"               www  "
+		"              www   "
+		"             www    "
+		"            www     "
+		"            ww      "
+		"            ww      "
+		"            ww      "
+		"            ww      " ;
+
+	this->vertices = Mylib::Matrix<Vertex>(map_tile_n+1, map_tile_n+1);
+	this->tiles = Mylib::Matrix<Tile>(map_tile_n, map_tile_n);
+
+	// create terrain mesh
+
+	auto get_vertex_altitude = [vertex_map] (const uint32_t j, const uint32_t i_) -> float {
+		const uint32_t i = map_tile_n - i_;
+		const char c = vertex_map[i*(map_tile_n+1) + j];
+		
+		if (c == ' ')
+			return 0.0f;
+		else if (c == '-')
+			return -1.0f;
+		else
+			return static_cast<float>(c - '0');
+	};
+
+	auto get_tile_texture = [tile_map] (const uint32_t j, const uint32_t i_) -> TextureDescriptor& {
+		const uint32_t i = map_tile_n - i_ - 1;
+		const char c = tile_map[i*map_tile_n + j];
+		
+		if (c == 'w')
+			return Texture::water;
+		else
+			return Texture::grass;
+	};
 
 	for (uint32_t i = 0; i < this->vertices.get_nrows(); i++) {
 		for (uint32_t j = 0; j < this->vertices.get_ncols(); j++) {
 			this->vertices[i, j] = Vertex {
-				.pos = Vector(i, j, 0)
+				.pos = Vector(i, j, get_vertex_altitude(i, j))
 			};
 		}
 	}
@@ -30,8 +102,6 @@ Map::Map (World *world_)
 	// generate graphics vertices
 
 	using enum Rect2D::VertexPositionIndex;
-
-	const Opengl_TextureDescriptor *desc = Texture::grass.info->data.get_value<Opengl_TextureDescriptor*>();
 
 	this->graphics_vertices.resize((this->vertices.get_nrows()-1) * (this->vertices.get_ncols()-1) * 6);
 
@@ -53,13 +123,17 @@ Map::Map (World *world_)
 				WestNorthRepeat = 5
 			};
 
+			// select texture from tile map
+
+			const Opengl_TextureDescriptor *desc = get_tile_texture(i, j).info->data.get_value<Opengl_TextureDescriptor*>();
+
 			// doing counter clock-wise
 
 			// first triangle
 
-			gv[WestSouth].offset = Vector(i, j, 0);
-			gv[EastSouth].offset = Vector(i+1, j, 0);
-			gv[WestNorth].offset = Vector(i, j+1, 0);
+			gv[WestSouth].offset = this->vertices[i, j].pos;
+			gv[EastSouth].offset = this->vertices[i+1, j].pos;
+			gv[WestNorth].offset = this->vertices[i, j+1].pos;
 
 			gv[WestSouth].tex_coords = Vector(desc->tex_coords[LeftBottom].x, desc->tex_coords[LeftBottom].y, desc->atlas->texture_depth);
 			gv[EastSouth].tex_coords = Vector(desc->tex_coords[RightBottom].x, desc->tex_coords[RightBottom].y, desc->atlas->texture_depth);
@@ -68,7 +142,7 @@ Map::Map (World *world_)
 			// second triangle
 
 			gv[EastSouthRepeat].offset = gv[EastSouth].offset;
-			gv[EastNorth].offset = Vector(i+1, j+1, 0);
+			gv[EastNorth].offset = this->vertices[i+1, j+1].pos;
 			gv[WestNorthRepeat].offset = gv[WestNorth].offset;
 
 			gv[EastSouthRepeat].tex_coords = gv[EastSouth].tex_coords;
@@ -174,15 +248,17 @@ World::World ()
 {
 	this->map = std::make_unique<Map>(this);
 	this->camera_pos = Vector(-3, -3, 5);
-	this->ambient_light_color.a = 0.5;
+	this->ambient_light_color.a = 0;
 
 	this->light = renderer->add_light_point_source(
-		Point(0, 0, 1000), Color::white()
+		Point(-10, -10, 100), Color::white()
 	);
 
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(10, 10, foo)) );
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(1, 9, foo)) );
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 9, foo)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 3, foo)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(18, 2, foo)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(5, 16, foo)) );
 	this->player = this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(1, 1, 3)) );
 }
 
@@ -230,11 +306,11 @@ void World::process_object_collision () noexcept
 					const auto abs_ds = Mylib::Math::abs(ds);
 
 					if (colliding) {
-						if (abs_ds.x < abs_ds.y && abs_ds.x < abs_ds.z) {
+						if (abs_ds.x <= abs_ds.y && abs_ds.x <= abs_ds.z) {
 							d_obj->get_ref_vel().x = 0;
 							d_obj->get_ref_pos().x += ds.x;
 						}
-						else if (abs_ds.y < abs_ds.x && abs_ds.y < abs_ds.z) {
+						else if (abs_ds.y <= abs_ds.x && abs_ds.y <= abs_ds.z) {
 							d_obj->get_ref_vel().y = 0;
 							d_obj->get_ref_pos().y += ds.y;
 						}
@@ -260,7 +336,7 @@ void World::render (const float dt)
 		.world_camera_target = this->player->get_ref_pos(),
 		.world_camera_up = Config::camera_up,
 		.projection = MyGlib::Graphics::OrthogonalProjectionInfo {
-			.view_width = 30,
+			.view_width = 10,
 			.z_near = 0.1,
 			.z_far = 100,
 		},

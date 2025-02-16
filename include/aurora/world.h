@@ -39,8 +39,13 @@ public:
 		Point pos;
 	};
 
+	struct Tile {
+		TextureDescriptor texture;
+	};
+
 private:
 	Mylib::Matrix<Vertex> vertices;
+	Mylib::Matrix<Tile> tiles;
 	std::vector<GraphicsVertex> graphics_vertices;
 
 public:
@@ -53,7 +58,7 @@ public:
 
 	inline Vector2 get_size () const noexcept
 	{
-		return Vector2(this->vertices.get_ncols() - 1, this->vertices.get_nrows() - 1);
+		return Vector2(this->tiles.get_ncols(), this->tiles.get_nrows());
 	}
 };
 

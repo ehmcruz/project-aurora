@@ -33,7 +33,7 @@ inline constexpr bool render_sprite_box = true;
 // ---------------------------------------------------
 
 // isometric view
-inline constexpr Vector camera_vector = Vector(1, 1, -0.5);
+inline constexpr Vector camera_vector = Vector(1, 1, -0.75);
 inline constexpr Vector camera_up = Vector(0, 0, 1);
 
 inline constexpr Vector gravity = Vector(0, 0, -9.8);

@@ -39,10 +39,10 @@ void load_objects ()
 			{
 				.subtype = Object::Subtype::Tree_00,
 				.texture = Texture::tree_00,
-				.collider_size = Vector3(2, 2, 2),
-				.sprite_size = Vector2(2, 2),
+				.collider_size = Vector3(1, 1, 4),
+				.sprite_size = Vector2(4, 4),
 				.sprite_source_anchor = Vector2(0, -0.5),
-				.sprite_dest_anchor = Vector3(0, 0, -1)
+				.sprite_dest_anchor = Vector3(0, 0, -2)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for tree_00");
@@ -56,7 +56,7 @@ void load_objects ()
 				.subtype = Object::Subtype::Castle_00,
 				.texture = Texture::castle_00,
 				.collider_size = Vector3(5, 5, 5),
-				.sprite_size = Vector2(7, 7),
+				.sprite_size = Vector2(6, 6),
 				.sprite_source_anchor = Vector2(0, -0.5),
 				.sprite_dest_anchor = Vector3(-2.5, -2.5, -2.5)
 			}
@@ -143,9 +143,9 @@ PlayerObject::PlayerObject (World *world_, const Point& pos_)
 			  Texture::matrix_main_char_east.to_span(),
 			  Texture::matrix_main_char_south_east.to_span()
 	      },
-	      Vector2(2, 2),
+	      Vector2(0.7, 0.7),
 	      Vector2(0, -0.5),
-	      Vector3(0, 0, -1),
+	      Vector3(0, 0, -0.35),
 	      0.05,
 	      Direction::South
 	  )
@@ -153,7 +153,7 @@ PlayerObject::PlayerObject (World *world_, const Point& pos_)
 	this->colliders.push_back(Collider {
 		.object = this,
 		.ds = Vector::zero(),
-		.size = Vector(1, 1, 2),
+		.size = Vector(0.3, 0.3, 0.7),
 		.id = 0
 	});
 }

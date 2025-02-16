@@ -24,7 +24,6 @@ static void load_textures ()
 
 	renderer->begin_texture_loading();
 
-	group_grass = renderer->load_texture("assets/grass.png");
 	tree_00 = renderer->load_texture("assets/tree_00.png");
 	castle_00 = renderer->load_texture("assets/castle_00.png");
 
@@ -36,11 +35,10 @@ static void load_textures ()
 	main_char_north_east = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_north_east-cropped.png");
 	main_char_east = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_east-cropped.png");
 	main_char_south_east = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_south_east-cropped.png");
+	grass = renderer->load_texture("assets/grass.png");
+	water = renderer->load_texture("assets/water.png");
 	
 	renderer->end_texture_loading();
-
-	matrix_grass = renderer->split_texture(group_grass, 224 / 16, 400 / 16);
-	grass = matrix_grass[2, 2];
 
 	matrix_main_char_south = renderer->split_texture(main_char_south, 3, 3);
 	matrix_main_char_south_west = renderer->split_texture(main_char_south_west, 3, 3);

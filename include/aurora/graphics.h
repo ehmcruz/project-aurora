@@ -30,9 +30,8 @@ class StaticObject;
 
 namespace Texture
 {
-	inline TextureDescriptor group_grass;
-	inline Mylib::Matrix<TextureDescriptor> matrix_grass;
 	inline TextureDescriptor grass;
+	inline TextureDescriptor water;
 	inline TextureDescriptor tree_00;
 	inline TextureDescriptor castle_00;
 
