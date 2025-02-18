@@ -76,8 +76,9 @@ private:
 	std::list< std::unique_ptr<Object> > objects;
 	std::list< StaticObject* > static_objects;
 	std::list< DynamicObject* > dynamic_objects;
+	std::list<Object*> objects_to_remove_next_frame;
 
-	DynamicObject* player;
+	PlayerObject *player;
 
 public:
 	World ();
@@ -88,30 +89,15 @@ public:
 	void render (const float dt);
 	void process_update (const float dt);
 
-	Object* add_object (std::unique_ptr<Object> object)
-	{
-		Object *obj = object.get();
-		this->objects.push_back( std::move(object) );
-		return obj;
-	}
-
-	StaticObject* add_static_object (std::unique_ptr<StaticObject> object)
-	{
-		StaticObject *obj = object.get();
-		this->static_objects.push_back(obj);
-		this->add_object( std::move(object) );
-		return obj;
-	}
-
+	Object* add_object (std::unique_ptr<Object> object);
 	StaticObject* add_static_object_at_ground (std::unique_ptr<StaticObject> object);
 
-	DynamicObject* add_dynamic_object (std::unique_ptr<DynamicObject> object)
+	void remove_object_next_frame (Object *object)
 	{
-		DynamicObject *obj = object.get();
-		this->dynamic_objects.push_back(obj);
-		this->add_object( std::move(object) );
-		return obj;
+		this->objects_to_remove_next_frame.push_back(object);
 	}
+
+	void frame_finished ();
 };
 
 // ---------------------------------------------------

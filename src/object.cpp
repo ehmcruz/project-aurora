@@ -8,6 +8,7 @@
 #include <aurora/graphics.h>
 #include <aurora/object.h>
 #include <aurora/world.h>
+#include <aurora/audio.h>
 
 
 namespace Game
@@ -156,6 +157,8 @@ PlayerObject::PlayerObject (World *world_, const Point& pos_)
 		.size = Vector(0.3, 0.3, 0.7),
 		.id = 0
 	});
+
+	this->event_key_down_d = event_manager->key_down().subscribe( Mylib::Trigger::make_callback_object<MyGlib::Event::KeyDown::Type>(*this, &PlayerObject::event_key_down_callback) );
 }
 
 // ---------------------------------------------------
@@ -209,19 +212,8 @@ void PlayerObject::update (const float dt)
 		}
 	}
 
-	constexpr std::array<Vector2, 8> velocity_dir = {
-		Vector2(-1, -1),    // South
-		Vector2(-1, 0),     // SouthWest
-		Vector2(-1, 1),     // West
-		Vector2(0, 1),      // NorthWest
-		Vector2(1, 1),      // North
-		Vector2(1, 0),      // NorthEast
-		Vector2(1, -1),     // East
-		Vector2(0, -1)      // SouthEast
-	};
-
 	if (!stop) {
-		const Vector2 new_vel = Mylib::Math::with_length( velocity_dir[ std::to_underlying(this->direction) ], speed);
+		const Vector2 new_vel = Mylib::Math::with_length( direction_vector[ std::to_underlying(this->direction) ], speed);
 		this->vel.x = new_vel.x;
 		this->vel.y = new_vel.y;
 
@@ -233,8 +225,31 @@ void PlayerObject::update (const float dt)
 
 		this->animations.stop();
 	}
+}
+
+// ---------------------------------------------------
+
+void PlayerObject::event_key_down_callback (const MyGlib::Event::KeyDown::Type& event)
+{
+	switch (event.key_code)
+	{
+		case SDLK_SPACE:
+			this->vel.z = 5;
+		break;
+
+		case SDLK_LCTRL: {
+			constexpr float distance = 0.1f;
+			const Vector2 direction = direction_vector[ std::to_underlying(this->direction) ];
+			const Vector2 ds = Mylib::Math::with_length(direction, distance);
+			const Vector pos = this->get_ref_pos() + Vector(ds);
+			this->world->add_object( std::make_unique<SpellObject>(this->world, pos, Vector(direction)) );
+			audio_manager->play_audio(Audio::spell);
+		}
+		break;
 	
-	
+		default:
+			break;
+	}
 }
 
 // ---------------------------------------------------
@@ -312,6 +327,51 @@ void EnemyObject::render (const float dt)
 // ---------------------------------------------------
 
 void EnemyObject::update (const float dt)
+{
+}
+
+// ---------------------------------------------------
+
+void EnemyObject::collision (const Collider& my_collider, const Collider& other_collider, const Vector& ds)
+{
+	const Object *other_object = other_collider.object;
+
+	if (other_object->get_type() == Object::Type::Spell) { // die
+		this->world->remove_object_next_frame(this);
+		audio_manager->play_audio(Audio::enemy_death);
+	}
+}
+
+// ---------------------------------------------------
+
+SpellObject::SpellObject (World *world_, const Point& pos_, const Vector& direction_)
+	: DynamicObject(world_, Subtype::Spell, pos_),
+	  cube(0.2f)
+{
+	this->colliders.push_back(Collider {
+		.object = this,
+		.ds = Vector::zero(),
+		.size = Vector(0.3f, 0.3f, 0.3f),
+		.id = 0
+	});
+
+	this->vel = Mylib::Math::with_length(direction_, 10.0f);
+}
+
+// ---------------------------------------------------
+
+void SpellObject::render (const float dt)
+{
+#ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
+	this->render_colliders(Color::red());
+#endif
+
+	renderer->draw_cube3D(this->cube, this->get_ref_pos(), Color::red());
+}
+
+// ---------------------------------------------------
+
+void SpellObject::update (const float dt)
 {
 }
 

@@ -40,7 +40,8 @@ public:
 		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Map) \
 		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Tree) \
 		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Castle) \
-		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Character)
+		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Character) \
+		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Spell)
 
 	enum class Type : uint32_t {
 		#define _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(V) V,
@@ -55,7 +56,8 @@ public:
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Tree, Tree_00) \
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Castle, Castle_00) \
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Player) \
-		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Enemy)
+		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Enemy) \
+		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Spell, Spell)
 
 	enum class Subtype : uint32_t {
 		#define _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(TYPE, V) V,
@@ -77,6 +79,17 @@ public:
 		#define _MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_(V) V,
 		_MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUES_
 		#undef _MYLIB_ENUM_CLASS_OBJECT_DIRECTION_VALUE_
+	};
+
+	static constexpr std::array<Vector2, 8> direction_vector = {
+		Vector2(-1, -1),    // South
+		Vector2(-1, 0),     // SouthWest
+		Vector2(-1, 1),     // West
+		Vector2(0, 1),      // NorthWest
+		Vector2(1, 1),      // North
+		Vector2(1, 0),      // NorthEast
+		Vector2(1, -1),     // East
+		Vector2(0, -1)      // SouthEast
 	};
 
 private:
@@ -106,8 +119,9 @@ public:
 
 	virtual ~Object () = default;
 
-	virtual void render (const float dt) = 0;
-	virtual void update (const float dt) = 0;
+	virtual void render (const float dt) { };
+	virtual void update (const float dt) { };
+	virtual void collision (const Collider& my_collider, const Collider& other_collider, const Vector& ds) { }
 };
 
 // ---------------------------------------------------
@@ -189,12 +203,15 @@ class PlayerObject : public DynamicObject
 private:
 	SpriteAnimationArray<8, Direction> animations;
 	MYLIB_OO_ENCAPSULATE_SCALAR_INIT_READONLY(Direction, direction, Direction::South)
+	MyGlib::Event::KeyDown::Descriptor event_key_down_d;
 
 public:
 	PlayerObject (World *world_, const Point& pos_);
 
 	void render (const float dt) override final;
 	void update (const float dt) override final;
+
+	void event_key_down_callback (const MyGlib::Event::KeyDown::Type& event);
 };
 
 // ---------------------------------------------------
@@ -208,6 +225,21 @@ private:
 public:
 	EnemyObject (World *world_, const std::initializer_list<Point2> positions);
 	~EnemyObject ();
+
+	void render (const float dt) override final;
+	void update (const float dt) override final;
+	void collision (const Collider& my_collider, const Collider& other_collider, const Vector& ds) override final;
+};
+
+// ---------------------------------------------------
+
+class SpellObject : public DynamicObject
+{
+private:
+	Cube3D cube;
+	
+public:
+	SpellObject (World *world_, const Point& pos_, const Vector& direction_);
 
 	void render (const float dt) override final;
 	void update (const float dt) override final;

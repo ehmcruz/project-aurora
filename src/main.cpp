@@ -9,6 +9,7 @@
 #include <aurora/lib.h>
 #include <aurora/globals.h>
 #include <aurora/graphics.h>
+#include <aurora/audio.h>
 #include <aurora/object.h>
 #include <aurora/world.h>
 #include <aurora/main.h>
@@ -38,6 +39,7 @@ Main::Main (const InitConfig& cfg)
 	renderer = &game_lib->get_graphics_manager();
 
 	load_graphics();
+	load_audio();
 	load_objects();
 
 	dprintln("chorono resolution ", (static_cast<float>(Clock::period::num) / static_cast<float>(Clock::period::den)));
@@ -156,6 +158,15 @@ void Main::run ()
 
 		renderer->render();
 		renderer->update_screen();
+
+		switch (this->state) {
+			case State::Playing:
+				this->world->frame_finished();
+			break;
+			
+			default:
+				mylib_assert_exception(0)
+		}
 
 		const ClockTime trequired = Clock::now();
 		elapsed = trequired - tbegin;

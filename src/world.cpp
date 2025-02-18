@@ -6,6 +6,7 @@
 #include <aurora/lib.h>
 #include <aurora/globals.h>
 #include <aurora/graphics.h>
+#include <aurora/audio.h>
 #include <aurora/object.h>
 #include <aurora/world.h>
 
@@ -260,8 +261,11 @@ World::World ()
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 3, foo)) );
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(18, 2, foo)) );
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(5, 16, foo)) );
-	this->add_dynamic_object( std::make_unique<EnemyObject>(this, std::initializer_list<Point2> { Point2(1, 1), Point2(3, 1) } ) );
-	this->player = this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(1, 1, 3)) );
+	this->add_object( std::make_unique<EnemyObject>(this, std::initializer_list<Point2> { Point2(1, 1), Point2(3, 1) } ) );
+	this->add_object( std::make_unique<EnemyObject>(this, std::initializer_list<Point2> { Point2(1, 10), Point2(6, 10) } ) );
+	this->player = static_cast<PlayerObject*>( this->add_object( std::make_unique<PlayerObject>(this, Vector(1, 1, 3)) ) );
+
+	audio_manager->play_audio(Audio::background_music);
 }
 
 // ---------------------------------------------------
@@ -322,6 +326,9 @@ void World::process_object_collision () noexcept
 							d_obj->get_ref_vel().z = 0;
 							d_obj->get_ref_pos().z += ds.z;
 						}
+
+						d_obj->collision(d_collider, s_collider, ds);
+						s_obj->collision(s_collider, d_collider, ds);
 					}
 				}
 			}
@@ -354,6 +361,9 @@ void World::process_object_collision () noexcept
 							obj_a->get_ref_pos().z -= ds.z / fp(2);
 							obj_b->get_ref_pos().z += ds.z / fp(2);
 						}
+
+						obj_a->collision(collider_a, collider_b, ds);
+						obj_b->collision(collider_b, collider_a, ds);
 					}
 				}
 			}
@@ -395,6 +405,23 @@ void World::process_update (const float dt)
 
 // ---------------------------------------------------
 
+Object* World::add_object (std::unique_ptr<Object> object)
+{
+	Object *obj = object.get();
+	this->objects.push_back( std::move(object) );
+
+	// careful since a dynamic object is also a static object
+
+	if (DynamicObject *d_obj = dynamic_cast<DynamicObject*>(obj))
+		this->dynamic_objects.push_back(d_obj);
+	else if (StaticObject *s_obj = dynamic_cast<StaticObject*>(obj))
+		this->static_objects.push_back(s_obj);
+
+	return obj;
+}
+
+// ---------------------------------------------------
+
 StaticObject* World::add_static_object_at_ground (std::unique_ptr<StaticObject> object)
 {
 	const float floor_z = this->map->get_z(Vector2(object->get_value_pos().x, object->get_value_pos().y));
@@ -414,7 +441,27 @@ StaticObject* World::add_static_object_at_ground (std::unique_ptr<StaticObject> 
 
 	obj_pos.z += floor_z - lowest_z;
 
-	return this->add_static_object(std::move(object));
+	return static_cast<StaticObject*>( this->add_object(std::move(object)) );
+}
+
+// ---------------------------------------------------
+
+void World::frame_finished ()
+{
+	for (Object *obj : this->objects_to_remove_next_frame) {
+		// careful since a dynamic object is also a static object
+
+		if (DynamicObject *d_obj = dynamic_cast<DynamicObject*>(obj))
+			this->dynamic_objects.remove(d_obj);
+		else if (StaticObject *s_obj = dynamic_cast<StaticObject*>(obj))
+			this->static_objects.remove(s_obj);
+		
+		this->objects.remove_if([obj](const std::unique_ptr<Object>& ptr) -> bool {
+			return ptr.get() == obj;
+		});
+	}
+
+	this->objects_to_remove_next_frame.clear();
 }
 
 // ---------------------------------------------------

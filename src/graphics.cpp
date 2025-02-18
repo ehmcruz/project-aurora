@@ -200,9 +200,6 @@ void Sprite::render ()
 SpriteAnimation::SpriteAnimation (StaticObject *object_, std::span<TextureDescriptor> textures, const Vector2 size_, const Vector2 source_anchor_, const Vector3& dest_anchor_, const float frame_duration_)
 	: object(object_), frame_duration(frame_duration_)
 {
-	dprintln("SpriteAnimation::SpriteAnimation");
-	dprintln("textures.size() = ", textures.size());
-
 	this->sprites.reserve(textures.size());
 
 	for (const auto& texture : textures)
