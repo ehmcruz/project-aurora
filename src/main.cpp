@@ -123,9 +123,10 @@ void Main::run ()
 
 		renderer->wait_next_frame();
 
-		timer.trigger_events();
-
 		virtual_dt = (real_dt > Config::max_dt) ? Config::max_dt : real_dt;
+
+		timer.trigger_events();
+		interpolation_manager.process_interpolation(virtual_dt);
 
 	#if 0
 		dprintln("start new frame render target_dt=", Config::target_dt,

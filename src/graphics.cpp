@@ -37,6 +37,7 @@ static void load_textures ()
 	main_char_south_east = renderer->load_texture("assets/main-char-walk/GreatSwordKnight_2hWalk_dir_south_east-cropped.png");
 	grass = renderer->load_texture("assets/grass.png");
 	water = renderer->load_texture("assets/water.png");
+	enemy_00 = renderer->load_texture("assets/enemy_00.png");
 	
 	renderer->end_texture_loading();
 

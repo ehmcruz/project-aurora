@@ -34,6 +34,7 @@ namespace Texture
 	inline TextureDescriptor water;
 	inline TextureDescriptor tree_00;
 	inline TextureDescriptor castle_00;
+	inline TextureDescriptor enemy_00;
 
 	inline TextureDescriptor main_char_south;
 	inline TextureDescriptor main_char_south_west;

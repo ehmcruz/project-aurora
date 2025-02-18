@@ -27,6 +27,8 @@ namespace Game
 
 using MyGlib::Graphics::Vector;
 using MyGlib::Graphics::Point;
+using MyGlib::Graphics::Point2;
+using MyGlib::Graphics::Point3;
 using MyGlib::Graphics::Quaternion;
 using MyGlib::Graphics::Vector2;
 using MyGlib::Graphics::Vector3;

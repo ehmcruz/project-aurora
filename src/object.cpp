@@ -239,6 +239,84 @@ void PlayerObject::update (const float dt)
 
 // ---------------------------------------------------
 
+EnemyObject::EnemyObject (World *world_, const std::initializer_list<Point2> positions)
+	: DynamicObject(world_, Subtype::Enemy),
+	  sprite(
+	      this,
+	      Texture::enemy_00,
+	      Vector2(0.4, 0.7),
+	      Vector2(0, -0.5),
+	      Vector3(0, 0, -0.35)
+	  )
+{
+	this->colliders.push_back(Collider {
+		.object = this,
+		.ds = Vector::zero(),
+		.size = Vector(0.3, 0.3, 0.7),
+		.id = 0
+	});
+
+	this->coroutine = [] (EnemyObject *enemy, const std::initializer_list<Point2> positions) -> Mylib::Coroutine {
+		EnemyObject& self = *enemy;
+		auto it_previous_pos = positions.begin();
+		auto it_next_position = positions.begin();
+		constexpr float speed = 1.0f;
+		constexpr float delay = 1.0f;
+
+		while (true) {
+			it_next_position++;
+
+			if (it_next_position == positions.end())
+				it_next_position = positions.begin();
+			
+			const Point2& previous_pos = *it_previous_pos;
+			const Point2& next_pos = *it_next_position;
+
+			const float distance = Mylib::Math::distance(previous_pos, next_pos);
+			const float time = distance / speed;
+
+			//dprintln("interpolating from ", previous_pos, " to ", next_pos, " in ", time, " seconds");
+			
+			interpolation_manager.interpolate_linear(time, &self.get_ref_pos().x, previous_pos.x, next_pos.x);
+			co_await interpolation_manager.coroutine_wait_interpolate_linear(time, &self.get_ref_pos().y, previous_pos.y, next_pos.y);
+
+			co_await timer.coroutine_wait(float_to_ClockDuration(delay));
+
+			it_previous_pos = it_next_position;
+		}
+	}(this, positions);
+
+	Mylib::initialize_coroutine(this->coroutine);
+}
+
+// ---------------------------------------------------
+
+EnemyObject::~EnemyObject ()
+{
+	timer.unregister_coroutine(this->coroutine);
+	interpolation_manager.unregister_coroutine(this->coroutine);
+	this->coroutine.handler.destroy();
+}
+
+// ---------------------------------------------------
+
+void EnemyObject::render (const float dt)
+{
+#ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
+	this->render_colliders(Color::red());
+#endif
+
+	this->sprite.render();
+}
+
+// ---------------------------------------------------
+
+void EnemyObject::update (const float dt)
+{
+}
+
+// ---------------------------------------------------
+
 const char* enum_class_to_str (const Object::Type value)
 {
 	static constexpr auto strs = std::to_array<const char*>({

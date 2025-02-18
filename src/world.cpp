@@ -1,4 +1,5 @@
 #include <limits>
+#include <iterator>
 
 #include <aurora/config.h>
 #include <aurora/types.h>
@@ -259,6 +260,7 @@ World::World ()
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 3, foo)) );
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(18, 2, foo)) );
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(5, 16, foo)) );
+	this->add_dynamic_object( std::make_unique<EnemyObject>(this, std::initializer_list<Point2> { Point2(1, 1), Point2(3, 1) } ) );
 	this->player = this->add_dynamic_object( std::make_unique<PlayerObject>(this, Vector(1, 1, 3)) );
 }
 
@@ -298,6 +300,8 @@ void World::process_map_collision () noexcept
 
 void World::process_object_collision () noexcept
 {
+	// Dynamic objects to static objects
+	
 	for (DynamicObject *d_obj : this->dynamic_objects) {
 		for (Collider& d_collider : d_obj->get_colliders()) {
 			for (StaticObject *s_obj : this->static_objects) {
@@ -317,6 +321,38 @@ void World::process_object_collision () noexcept
 						else {
 							d_obj->get_ref_vel().z = 0;
 							d_obj->get_ref_pos().z += ds.z;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Dynamic objects to dynamic objects
+	
+	for (auto it_a = this->dynamic_objects.begin(); it_a != this->dynamic_objects.end(); it_a++) {
+		DynamicObject *obj_a = *it_a;
+
+		for (auto it_b = std::next(it_a); it_b != this->dynamic_objects.end(); it_b++) {
+			DynamicObject *obj_b = *it_b;
+
+			for (Collider& collider_a : obj_a->get_colliders()) {
+				for (Collider& collider_b : obj_b->get_colliders()) {
+					const auto [colliding, ds] = check_collision(collider_a, collider_b);
+					const auto abs_ds = Mylib::Math::abs(ds);
+
+					if (colliding) {
+						if (abs_ds.x <= abs_ds.y && abs_ds.x <= abs_ds.z) {
+							obj_a->get_ref_pos().x -= ds.x / fp(2);
+							obj_b->get_ref_pos().x += ds.x / fp(2);
+						}
+						else if (abs_ds.y <= abs_ds.x && abs_ds.y <= abs_ds.z) {
+							obj_a->get_ref_pos().y -= ds.y / fp(2);
+							obj_b->get_ref_pos().y += ds.y / fp(2);
+						}
+						else {
+							obj_a->get_ref_pos().z -= ds.z / fp(2);
+							obj_b->get_ref_pos().z += ds.z / fp(2);
 						}
 					}
 				}

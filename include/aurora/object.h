@@ -10,9 +10,11 @@
 #include <string>
 #include <list>
 #include <memory>
+#include <initializer_list>
 
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
+#include <my-lib/coroutine.h>
 
 #include <my-game-lib/my-game-lib.h>
 
@@ -52,7 +54,8 @@ public:
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Map, Map) \
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Tree, Tree_00) \
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Castle, Castle_00) \
-		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Player)
+		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Player) \
+		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Enemy)
 
 	enum class Subtype : uint32_t {
 		#define _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(TYPE, V) V,
@@ -189,6 +192,22 @@ private:
 
 public:
 	PlayerObject (World *world_, const Point& pos_);
+
+	void render (const float dt) override final;
+	void update (const float dt) override final;
+};
+
+// ---------------------------------------------------
+
+class EnemyObject : public DynamicObject
+{
+private:
+	Sprite sprite;
+	Mylib::Coroutine coroutine;
+	
+public:
+	EnemyObject (World *world_, const std::initializer_list<Point2> positions);
+	~EnemyObject ();
 
 	void render (const float dt) override final;
 	void update (const float dt) override final;
