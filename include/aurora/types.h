@@ -57,6 +57,8 @@ using Clock = std::chrono::steady_clock;
 using ClockDuration = Clock::duration;
 using ClockTime = Clock::time_point;
 
+using FooEvent = int;
+
 // ---------------------------------------------------
 
 } // end namespace Game

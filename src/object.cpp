@@ -45,7 +45,20 @@ struct BluePrintStaticObjectSprite {
 
 // ---------------------------------------------------
 
+struct BluePrintStaticObjectAnimation {
+	Object::Subtype subtype;
+	std::span<TextureDescriptor> textures;
+	Vector3 collider_size;
+	Vector2 sprite_size;
+	Vector2 sprite_source_anchor;
+	Vector3 sprite_dest_anchor;
+	float frame_duration;
+};
+
+// ---------------------------------------------------
+
 static std::unordered_map<uint32_t, BluePrintStaticObjectSprite> blueprints_static_object_sprite;
+static std::unordered_map<uint32_t, BluePrintStaticObjectAnimation> blueprints_static_object_animation;
 
 // ---------------------------------------------------
 
@@ -64,7 +77,7 @@ void load_objects ()
 				.sprite_dest_anchor = Vector3(0, 0, -2)
 			}
 		});
-		mylib_assert_exception_msg(success, "failed to insert blueprint for tree_00");
+		mylib_assert_exception_msg(success, "failed to insert blueprint for Tree_00");
 	}
 
 	// castle_00
@@ -80,7 +93,24 @@ void load_objects ()
 				.sprite_dest_anchor = Vector3(-1.7, -1.7, -2.5)
 			}
 		});
-		mylib_assert_exception_msg(success, "failed to insert blueprint for castle_00");
+		mylib_assert_exception_msg(success, "failed to insert blueprint for Castle_00");
+	}
+
+	// explosion
+	{
+		const auto [it, success] = blueprints_static_object_animation.insert({
+			std::to_underlying(Object::Subtype::Explosion),
+			{
+				.subtype = Object::Subtype::Explosion,
+				.textures = Texture::matrix_explosion.to_span(),
+				.collider_size = Vector3(0, 0, 0), // no collider
+				.sprite_size = Vector2(2, 2),
+				.sprite_source_anchor = Vector2(0, 0),
+				.sprite_dest_anchor = Vector3(0, 0, 0),
+				.frame_duration = 0.05f
+			}
+		});
+		mylib_assert_exception_msg(success, "failed to insert blueprint for Explosion");
 	}
 }
 
@@ -97,7 +127,7 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 
 	const auto& blueprint = it->second;
 
-	std::unique_ptr<StaticObjectSprite> r = std::make_unique<StaticObjectSprite>(
+	auto r = std::make_unique<StaticObjectSprite>(
 		world,
 		blueprint.subtype,
 		pos,
@@ -115,6 +145,58 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 	});
 
 	return r;
+}
+
+// ---------------------------------------------------
+
+std::unique_ptr<StaticObjectAnimation> build_static_object_animation (
+	World *world,
+	const Object::Subtype subtype,
+	const Vector& pos
+	)
+{
+	const auto it = blueprints_static_object_animation.find({std::to_underlying(subtype)});
+	mylib_assert_exception_msg(it != blueprints_static_object_animation.end(), "blueprint not found for ", subtype);
+
+	const auto& blueprint = it->second;
+
+	auto r = std::make_unique<StaticObjectAnimation>(
+		world,
+		blueprint.subtype,
+		pos,
+		blueprint.textures,
+		blueprint.sprite_size,
+		blueprint.sprite_source_anchor,
+		blueprint.sprite_dest_anchor,
+		blueprint.frame_duration
+	);
+
+	if (blueprint.collider_size != Vector3::zero())
+		r->get_colliders().push_back(Collider {
+			.object = r.get(),
+			.ds = Vector::zero(),
+			.size = blueprint.collider_size,
+			.id = 0
+		});
+
+	return r;
+}
+
+// ---------------------------------------------------
+
+void Object::render (const float dt)
+{
+
+}
+
+void Object::update (const float dt)
+{
+
+}
+
+void Object::collision (const Collider& my_collider, const Collider& other_collider, const Vector& ds)
+{
+
 }
 
 // ---------------------------------------------------
@@ -142,8 +224,13 @@ void StaticObjectSprite::render (const float dt)
 
 // ---------------------------------------------------
 
-void StaticObjectSprite::update (const float dt)
+void StaticObjectAnimation::render (const float dt)
 {
+#ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
+	this->render_colliders(Colors::red);
+#endif
+
+	this->animation.render(dt);
 }
 
 // ---------------------------------------------------
@@ -355,8 +442,19 @@ void EnemyObject::collision (const Collider& my_collider, const Collider& other_
 	const Object *other_object = other_collider.object;
 
 	if (other_object->get_type() == Object::Type::Spell) { // die
+		auto *explosion_obj = static_cast<StaticObjectAnimation*>( this->world->add_object( build_static_object_animation(
+			this->world,
+			Object::Subtype::Explosion,
+			this->get_value_pos()
+			)));
 		this->world->remove_object_next_frame(this);
 		audio_manager->play_audio(Audio::enemy_death);
+
+		explosion_obj->get_ref_animation().get_ref_event_handler().subscribe( Mylib::Trigger::make_callback_lambda<FooEvent>(
+			[explosion_obj, world = this->world] (const FooEvent& event) {
+				world->remove_object_next_frame(explosion_obj);
+			}
+		));
 	}
 }
 

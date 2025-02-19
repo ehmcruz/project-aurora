@@ -38,6 +38,7 @@ static void load_textures ()
 	grass = renderer->load_texture("assets/grass.png");
 	water = renderer->load_texture("assets/water.png");
 	enemy_00 = renderer->load_texture("assets/enemy_00.png");
+	explosion = renderer->load_texture("assets/explosion_001S.png");
 	
 	renderer->end_texture_loading();
 
@@ -49,6 +50,8 @@ static void load_textures ()
 	matrix_main_char_north_east = renderer->split_texture(main_char_north_east, 3, 3);
 	matrix_main_char_east = renderer->split_texture(main_char_east, 3, 3);
 	matrix_main_char_south_east = renderer->split_texture(main_char_south_east, 3, 3);
+
+	matrix_explosion = renderer->split_texture(explosion, 3, 3);
 }
 
 // ---------------------------------------------------
@@ -210,6 +213,8 @@ SpriteAnimation::SpriteAnimation (StaticObject *object_, std::span<TextureDescri
 
 void SpriteAnimation::render (const float dt)
 {
+	this->sprites[this->current_frame].render();
+
 	if (this->stopped == false) {
 		this->current_frame_time += dt;
 
@@ -217,12 +222,12 @@ void SpriteAnimation::render (const float dt)
 			this->current_frame_time = 0;
 			this->current_frame++;
 
-			if (this->current_frame >= this->sprites.size())
+			if (this->current_frame >= this->sprites.size()) {
 				this->current_frame = 0;
+				this->event_handler.publish(0);
+			}
 		}
 	}
-
-	this->sprites[this->current_frame].render();
 }
 
 // ---------------------------------------------------

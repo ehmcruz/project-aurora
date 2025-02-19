@@ -42,7 +42,8 @@ public:
 		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Tree) \
 		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Castle) \
 		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Character) \
-		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Spell)
+		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(Spell) \
+		_MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(VisualEffect)
 
 	enum class Type : uint32_t {
 		#define _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_(V) V,
@@ -58,7 +59,8 @@ public:
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Castle, Castle_00) \
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Player) \
 		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Character, Enemy) \
-		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Spell, Spell)
+		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(Spell, Spell) \
+		_MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(VisualEffect, Explosion)
 
 	enum class Subtype : uint32_t {
 		#define _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_(TYPE, V) V,
@@ -120,9 +122,9 @@ public:
 
 	virtual ~Object () = default;
 
-	virtual void render (const float dt) { };
-	virtual void update (const float dt) { };
-	virtual void collision (const Collider& my_collider, const Collider& other_collider, const Vector& ds) { }
+	virtual void render (const float dt);
+	virtual void update (const float dt);
+	virtual void collision (const Collider& my_collider, const Collider& other_collider, const Vector& ds);
 };
 
 // ---------------------------------------------------
@@ -169,7 +171,22 @@ public:
 	}
 
 	void render (const float dt) override final;
-	void update (const float dt) override final;
+};
+
+// ---------------------------------------------------
+
+class StaticObjectAnimation : public StaticObject
+{
+	MYLIB_OO_ENCAPSULATE_OBJ(SpriteAnimation, animation)
+
+public:
+	StaticObjectAnimation (World *world_, const Subtype subtype_, const Point& pos_, const std::span<TextureDescriptor> textures_, const Vector2& size_, const Vector2 source_anchor_, const Vector3 dest_anchor_, const float frame_duration_)
+		: StaticObject(world_, subtype_, pos_),
+		  animation(this, textures_, size_, source_anchor_, dest_anchor_, frame_duration_)
+	{
+	}
+
+	void render (const float dt) override final;
 };
 
 // ---------------------------------------------------
@@ -257,6 +274,12 @@ public:
 void load_objects ();
 
 std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
+	World *world,
+	const Object::Subtype subtype,
+	const Vector& pos
+	);
+
+std::unique_ptr<StaticObjectAnimation> build_static_object_animation (
 	World *world,
 	const Object::Subtype subtype,
 	const Vector& pos

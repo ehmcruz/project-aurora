@@ -256,11 +256,11 @@ World::World ()
 		Point(-10, -10, 100), Colors::white
 	);
 
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(10, 10, foo)) );
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(1, 9, foo)) );
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 3, foo)) );
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(18, 2, foo)) );
-	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(5, 16, foo)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(10, 10, foo<float>)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(1, 9, foo<float>)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(3, 3, foo<float>)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(18, 2, foo<float>)) );
+	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Tree_00, Point(5, 16, foo<float>)) );
 	this->add_object( std::make_unique<EnemyObject>(this, std::initializer_list<Point2> { Point2(1, 1), Point2(3, 1) } ) );
 	this->add_object( std::make_unique<EnemyObject>(this, std::initializer_list<Point2> { Point2(1, 10), Point2(6, 10) } ) );
 	this->player = static_cast<PlayerObject*>( this->add_object( std::make_unique<PlayerObject>(this, Vector(1, 1, 3)) ) );

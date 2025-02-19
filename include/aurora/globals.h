@@ -39,7 +39,8 @@ inline Mylib::InterpolationManager<float> interpolation_manager;
 
 // ---------------------------------------------------
 
-inline constexpr float foo = 0;
+template <typename T>
+inline constexpr T foo = 0;
 
 // ---------------------------------------------------
 

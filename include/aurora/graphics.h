@@ -13,6 +13,7 @@
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
 #include <my-lib/matrix.h>
+#include <my-lib/trigger.h>
 
 #include <my-game-lib/my-game-lib.h>
 
@@ -53,6 +54,9 @@ namespace Texture
 	inline Mylib::Matrix<TextureDescriptor> matrix_main_char_north_east;
 	inline Mylib::Matrix<TextureDescriptor> matrix_main_char_east;
 	inline Mylib::Matrix<TextureDescriptor> matrix_main_char_south_east;
+
+	inline TextureDescriptor explosion;
+	inline Mylib::Matrix<TextureDescriptor> matrix_explosion;
 }
 
 void load_graphics ();
@@ -95,8 +99,10 @@ private:
 	MYLIB_OO_ENCAPSULATE_SCALAR(float, frame_duration)
 	MYLIB_OO_ENCAPSULATE_SCALAR_INIT(uint32_t, current_frame, 0)
 	MYLIB_OO_ENCAPSULATE_SCALAR_INIT(float, current_frame_time, 0)
+	MYLIB_OO_ENCAPSULATE_OBJ(Mylib::Trigger::EventHandler<FooEvent>, event_handler)
 
 	bool stopped = false;
+	
 
 public:
 	SpriteAnimation () = default;
