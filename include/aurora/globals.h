@@ -7,8 +7,8 @@
 
 #include <random>
 
-#include <my-lib/trigger.h>
-#include <my-lib/timer.h>
+#include <my-lib/event.h>
+#include <my-lib/event-timer.h>
 #include <my-lib/interpolation.h>
 
 #include <my-game-lib/my-game-lib.h>
@@ -32,7 +32,7 @@ inline std::mt19937_64 random_generator;
 
 // ---------------------------------------------------
 
-inline Mylib::Trigger::Timer timer( Clock::now );
+inline Mylib::Event::Timer timer( Clock::now );
 using Timer = decltype(timer);
 
 inline Mylib::InterpolationManager<float> interpolation_manager;

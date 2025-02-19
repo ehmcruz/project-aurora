@@ -13,7 +13,7 @@
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
 #include <my-lib/matrix.h>
-#include <my-lib/trigger.h>
+#include <my-lib/event.h>
 
 #include <my-game-lib/my-game-lib.h>
 
@@ -93,13 +93,17 @@ public:
 
 class SpriteAnimation
 {
+public:
+	using Event = FooEvent;
+	using EventHandler = Mylib::Event::Handler<Event>;
+
 private:
 	MYLIB_OO_ENCAPSULATE_PTR_INIT(StaticObject*, object, nullptr)
 	MYLIB_OO_ENCAPSULATE_OBJ_READONLY(std::vector<Sprite>, sprites)
 	MYLIB_OO_ENCAPSULATE_SCALAR(float, frame_duration)
 	MYLIB_OO_ENCAPSULATE_SCALAR_INIT(uint32_t, current_frame, 0)
 	MYLIB_OO_ENCAPSULATE_SCALAR_INIT(float, current_frame_time, 0)
-	MYLIB_OO_ENCAPSULATE_OBJ(Mylib::Trigger::EventHandler<FooEvent>, event_handler)
+	MYLIB_OO_ENCAPSULATE_OBJ(EventHandler, event_handler)
 
 	bool stopped = false;
 	

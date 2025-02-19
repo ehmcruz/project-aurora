@@ -178,13 +178,11 @@ public:
 class StaticObjectAnimation : public StaticObject
 {
 	MYLIB_OO_ENCAPSULATE_OBJ(SpriteAnimation, animation)
+	SpriteAnimation::EventHandler::Descriptor animation_event_descriptor;
 
 public:
-	StaticObjectAnimation (World *world_, const Subtype subtype_, const Point& pos_, const std::span<TextureDescriptor> textures_, const Vector2& size_, const Vector2 source_anchor_, const Vector3 dest_anchor_, const float frame_duration_)
-		: StaticObject(world_, subtype_, pos_),
-		  animation(this, textures_, size_, source_anchor_, dest_anchor_, frame_duration_)
-	{
-	}
+	StaticObjectAnimation (World *world_, const Subtype subtype_, const Point& pos_, const std::span<TextureDescriptor> textures_, const Vector2& size_, const Vector2 source_anchor_, const Vector3 dest_anchor_, const float frame_duration_, const bool die_after_animation);
+	~StaticObjectAnimation ();
 
 	void render (const float dt) override final;
 };
@@ -225,6 +223,7 @@ private:
 
 public:
 	PlayerObject (World *world_, const Point& pos_);
+	~PlayerObject ();
 
 	void render (const float dt) override final;
 	void update (const float dt) override final;

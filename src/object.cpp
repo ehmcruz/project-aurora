@@ -53,6 +53,7 @@ struct BluePrintStaticObjectAnimation {
 	Vector2 sprite_source_anchor;
 	Vector3 sprite_dest_anchor;
 	float frame_duration;
+	bool die_after_animation;
 };
 
 // ---------------------------------------------------
@@ -107,7 +108,8 @@ void load_objects ()
 				.sprite_size = Vector2(2, 2),
 				.sprite_source_anchor = Vector2(0, 0),
 				.sprite_dest_anchor = Vector3(0, 0, 0),
-				.frame_duration = 0.05f
+				.frame_duration = 0.05f,
+				.die_after_animation = true
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for Explosion");
@@ -137,12 +139,13 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 		blueprint.sprite_dest_anchor
 	);
 
-	r->get_colliders().push_back(Collider {
-		.object = r.get(),
-		.ds = Vector::zero(),
-		.size = blueprint.collider_size,
-		.id = 0
-	});
+	if (blueprint.collider_size != Vector3::zero())
+		r->get_colliders().push_back(Collider {
+			.object = r.get(),
+			.ds = Vector::zero(),
+			.size = blueprint.collider_size,
+			.id = 0
+		});
 
 	return r;
 }
@@ -168,7 +171,8 @@ std::unique_ptr<StaticObjectAnimation> build_static_object_animation (
 		blueprint.sprite_size,
 		blueprint.sprite_source_anchor,
 		blueprint.sprite_dest_anchor,
-		blueprint.frame_duration
+		blueprint.frame_duration,
+		blueprint.die_after_animation
 	);
 
 	if (blueprint.collider_size != Vector3::zero())
@@ -235,6 +239,29 @@ void StaticObjectAnimation::render (const float dt)
 
 // ---------------------------------------------------
 
+StaticObjectAnimation::StaticObjectAnimation (World *world_, const Subtype subtype_, const Point& pos_, const std::span<TextureDescriptor> textures_, const Vector2& size_, const Vector2 source_anchor_, const Vector3 dest_anchor_, const float frame_duration_, const bool die_after_animation)
+	: StaticObject(world_, subtype_, pos_),
+		animation(this, textures_, size_, source_anchor_, dest_anchor_, frame_duration_)
+{
+	if (die_after_animation) {
+		this->animation_event_descriptor = this->animation.get_ref_event_handler().subscribe( Mylib::Event::make_callback_lambda<FooEvent>(
+				[this] (const SpriteAnimation::Event& event) {
+					this->world->remove_object_next_frame(this);
+				}
+			));
+	}
+}
+
+// ---------------------------------------------------
+
+StaticObjectAnimation::~StaticObjectAnimation ()
+{
+	if (this->animation_event_descriptor.is_valid())
+		this->animation.get_ref_event_handler().unsubscribe(this->animation_event_descriptor);
+}
+
+// ---------------------------------------------------
+
 PlayerObject::PlayerObject (World *world_, const Point& pos_)
 	: DynamicObject(world_, Subtype::Player, pos_),
 	  animations(
@@ -263,7 +290,14 @@ PlayerObject::PlayerObject (World *world_, const Point& pos_)
 		.id = 0
 	});
 
-	this->event_key_down_d = event_manager->key_down().subscribe( Mylib::Trigger::make_callback_object<MyGlib::Event::KeyDown::Type>(*this, &PlayerObject::event_key_down_callback) );
+	this->event_key_down_d = event_manager->key_down().subscribe( Mylib::Event::make_callback_object<MyGlib::Event::KeyDown::Type>(*this, &PlayerObject::event_key_down_callback) );
+}
+
+// ---------------------------------------------------
+
+PlayerObject::~PlayerObject ()
+{
+	event_manager->key_down().unsubscribe(this->event_key_down_d);
 }
 
 // ---------------------------------------------------
@@ -449,12 +483,6 @@ void EnemyObject::collision (const Collider& my_collider, const Collider& other_
 			)));
 		this->world->remove_object_next_frame(this);
 		audio_manager->play_audio(Audio::enemy_death);
-
-		explosion_obj->get_ref_animation().get_ref_event_handler().subscribe( Mylib::Trigger::make_callback_lambda<FooEvent>(
-			[explosion_obj, world = this->world] (const FooEvent& event) {
-				world->remove_object_next_frame(explosion_obj);
-			}
-		));
 	}
 }
 
@@ -476,9 +504,8 @@ SpellObject::SpellObject (World *world_, const Point& pos_, const Vector& direct
 
 	this->vel = Mylib::Math::with_length(direction_, Config::spell_speed);
 
-	this->timer_descriptor = timer.schedule_event(Clock::now() + float_to_ClockDuration(Config::spell_life_span), Mylib::Trigger::make_callback_lambda<Timer::Event>(
+	this->timer_descriptor = timer.schedule_event(Clock::now() + float_to_ClockDuration(Config::spell_life_span), Mylib::Event::make_callback_lambda<Timer::Event>(
 		[this] (const Timer::Event& event) {
-			this->timer_descriptor.invalidate();
 			this->world->remove_object_next_frame(this);
 		}));
 }
@@ -489,7 +516,6 @@ SpellObject::~SpellObject ()
 {
 	if (this->timer_descriptor.is_valid()) {
 		timer.unschedule_event(this->timer_descriptor);
-		this->timer_descriptor.invalidate();
 	}
 }
 

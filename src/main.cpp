@@ -54,8 +54,8 @@ Main::Main (const InitConfig& cfg)
 
 	this->alive = true;
 
-	this->event_quit_d = event_manager->quit().subscribe( Mylib::Trigger::make_callback_object<MyGlib::Event::Quit::Type>(*this, &Main::event_quit) );
-	this->event_key_down_d = event_manager->key_down().subscribe( Mylib::Trigger::make_callback_object<MyGlib::Event::KeyDown::Type>(*this, &Main::event_key_down_callback) );
+	this->event_quit_d = event_manager->quit().subscribe( Mylib::Event::make_callback_object<MyGlib::Event::Quit::Type>(*this, &Main::event_quit) );
+	this->event_key_down_d = event_manager->key_down().subscribe( Mylib::Event::make_callback_object<MyGlib::Event::KeyDown::Type>(*this, &Main::event_key_down_callback) );
 }
 
 // ---------------------------------------------------
