@@ -16,6 +16,7 @@
 #include <my-game-lib/my-game-lib.h>
 
 #include <aurora/types.h>
+#include <aurora/globals.h>
 
 
 namespace Game
@@ -35,6 +36,28 @@ constexpr ClockDuration float_to_ClockDuration (const float t)
 constexpr float ClockDuration_to_float (const ClockDuration& d)
 {
 	return std::chrono::duration_cast<std::chrono::duration<float>>(d).count();
+}
+
+// ---------------------------------------------------
+
+template <typename T>
+T random_vector ()
+{
+	T r;
+	std::uniform_real_distribution<typename T::Type> d(0, 1);
+
+	for (uint32_t i = 0; i < T::get_dim(); i++)
+		r[i] = d(random_generator);
+
+	return r;
+}
+
+// ---------------------------------------------------
+
+inline float random_float (const float min, const float max)
+{
+	std::uniform_real_distribution<float> d(min, max);
+	return d(random_generator);
 }
 
 // ---------------------------------------------------

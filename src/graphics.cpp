@@ -190,7 +190,7 @@ void Sprite::render ()
 
 		for (auto& vertex : vertices) {
 			vertex.offset = this->object->get_ref_pos();
-			vertex.color = Color::blue();
+			vertex.color = Colors::blue;
 		}
 	}
 }

@@ -5,6 +5,8 @@
 	#define SDL_MAIN_HANDLED
 #endif
 
+#include <random>
+
 #include <my-lib/trigger.h>
 #include <my-lib/timer.h>
 #include <my-lib/interpolation.h>
@@ -23,6 +25,10 @@ inline MyGlib::Lib *game_lib = nullptr;
 inline MyGlib::Event::Manager *event_manager = nullptr;
 inline MyGlib::Audio::Manager *audio_manager = nullptr;
 inline MyGlib::Graphics::Manager *renderer = nullptr;
+
+// ---------------------------------------------------
+
+inline std::mt19937_64 random_generator;
 
 // ---------------------------------------------------
 

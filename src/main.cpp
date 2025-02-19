@@ -38,6 +38,9 @@ Main::Main (const InitConfig& cfg)
 	audio_manager = &game_lib->get_audio_manager();
 	renderer = &game_lib->get_graphics_manager();
 
+	std::random_device rd;
+	random_generator.seed( rd() );
+
 	load_graphics();
 	load_audio();
 	load_objects();

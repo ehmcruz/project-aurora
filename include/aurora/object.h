@@ -15,6 +15,7 @@
 #include <my-lib/std.h>
 #include <my-lib/macros.h>
 #include <my-lib/coroutine.h>
+#include <my-lib/interpolation.h>
 
 #include <my-game-lib/my-game-lib.h>
 
@@ -237,9 +238,15 @@ class SpellObject : public DynamicObject
 {
 private:
 	Cube3D cube;
-	
+	Color color;
+	Mylib::LinearInterpolator<float, Color> color_interpolator;
+	Vector axis;
+	float angle;
+	Timer::Descriptor timer_descriptor;
+
 public:
 	SpellObject (World *world_, const Point& pos_, const Vector& direction_);
+	~SpellObject ();
 
 	void render (const float dt) override final;
 	void update (const float dt) override final;

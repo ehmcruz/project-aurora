@@ -45,6 +45,7 @@ using MyGlib::Graphics::TextureDescriptor;
 using MyGlib::Graphics::TextureRenderOptions;
 using MyGlib::Graphics::Opengl::Opengl_TextureDescriptor;
 
+using Colors = MyGlib::Graphics::Colors;
 using AudioDescriptor = MyGlib::Audio::Descriptor;
 using GraphicsVertex = MyGlib::Graphics::Opengl::ProgramTriangleTexture::Vertex;
 

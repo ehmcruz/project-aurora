@@ -38,7 +38,6 @@ inline constexpr Vector camera_up = Vector(0, 0, 1);
 
 inline constexpr Vector gravity = Vector(0, 0, -9.8);
 
-
 // ---------------------------------------------------
 
 inline constexpr float target_fps = 60.0f;

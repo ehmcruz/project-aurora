@@ -253,7 +253,7 @@ World::World ()
 	this->ambient_light_color.a = 0;
 
 	this->light = renderer->add_light_point_source(
-		Point(-10, -10, 100), Color::white()
+		Point(-10, -10, 100), Colors::white
 	);
 
 	this->add_static_object_at_ground( build_static_object_sprite(this, Object::Subtype::Castle_00, Point(10, 10, foo)) );
@@ -265,6 +265,7 @@ World::World ()
 	this->add_object( std::make_unique<EnemyObject>(this, std::initializer_list<Point2> { Point2(1, 10), Point2(6, 10) } ) );
 	this->player = static_cast<PlayerObject*>( this->add_object( std::make_unique<PlayerObject>(this, Vector(1, 1, 3)) ) );
 
+	audio_manager->set_volume(Audio::background_music, 0.3f);
 	audio_manager->play_audio(Audio::background_music);
 }
 

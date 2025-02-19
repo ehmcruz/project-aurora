@@ -1,5 +1,12 @@
 #include <unordered_map>
 #include <utility>
+#include <numbers>
+#include <numeric>
+
+#include <cmath>
+
+#include <my-lib/std.h>
+#include <my-lib/math.h>
 
 #include <aurora/config.h>
 #include <aurora/types.h>
@@ -13,6 +20,17 @@
 
 namespace Game
 {
+
+// ---------------------------------------------------
+
+namespace Config
+{
+	inline constexpr float spell_color_time = 0.5f;
+	inline constexpr float spell_size = 0.2f;
+	inline constexpr float spell_speed = 4.0f;
+	inline constexpr float spell_angular_speed = Mylib::Math::degrees_to_radians(270.0f);
+	inline constexpr float spell_life_span = 2.0f;
+}
 
 // ---------------------------------------------------
 
@@ -57,9 +75,9 @@ void load_objects ()
 				.subtype = Object::Subtype::Castle_00,
 				.texture = Texture::castle_00,
 				.collider_size = Vector3(5, 5, 5),
-				.sprite_size = Vector2(6, 6),
+				.sprite_size = Vector2(5.5, 5.5),
 				.sprite_source_anchor = Vector2(0, -0.5),
-				.sprite_dest_anchor = Vector3(-2.5, -2.5, -2.5)
+				.sprite_dest_anchor = Vector3(-1.7, -1.7, -2.5)
 			}
 		});
 		mylib_assert_exception_msg(success, "failed to insert blueprint for castle_00");
@@ -116,7 +134,7 @@ void StaticObject::render_colliders (const Color& color) const
 void StaticObjectSprite::render (const float dt)
 {
 #ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
-	this->render_colliders(Color::red());
+	this->render_colliders(Colors::red);
 #endif
 
 	this->sprite.render();
@@ -166,7 +184,7 @@ PlayerObject::PlayerObject (World *world_, const Point& pos_)
 void PlayerObject::render (const float dt)
 {
 #ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
-	this->render_colliders(Color::red());
+	this->render_colliders(Colors::red);
 #endif
 
 	this->animations.render(dt);
@@ -318,7 +336,7 @@ EnemyObject::~EnemyObject ()
 void EnemyObject::render (const float dt)
 {
 #ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
-	this->render_colliders(Color::red());
+	this->render_colliders(Colors::red);
 #endif
 
 	this->sprite.render();
@@ -346,16 +364,35 @@ void EnemyObject::collision (const Collider& my_collider, const Collider& other_
 
 SpellObject::SpellObject (World *world_, const Point& pos_, const Vector& direction_)
 	: DynamicObject(world_, Subtype::Spell, pos_),
-	  cube(0.2f)
+	  cube(Config::spell_size),
+	  color_interpolator(Config::spell_color_time, &this->color, Colors::random(random_generator), Colors::random(random_generator)),
+	  axis(random_vector<Vector3>()),
+	  angle(0.0f)
 {
 	this->colliders.push_back(Collider {
 		.object = this,
 		.ds = Vector::zero(),
-		.size = Vector(0.3f, 0.3f, 0.3f),
+		.size = Vector(Config::spell_size, Config::spell_size, Config::spell_size),
 		.id = 0
 	});
 
-	this->vel = Mylib::Math::with_length(direction_, 10.0f);
+	this->vel = Mylib::Math::with_length(direction_, Config::spell_speed);
+
+	this->timer_descriptor = timer.schedule_event(Clock::now() + float_to_ClockDuration(Config::spell_life_span), Mylib::Trigger::make_callback_lambda<Timer::Event>(
+		[this] (const Timer::Event& event) {
+			this->timer_descriptor.invalidate();
+			this->world->remove_object_next_frame(this);
+		}));
+}
+
+// ---------------------------------------------------
+
+SpellObject::~SpellObject ()
+{
+	if (this->timer_descriptor.is_valid()) {
+		timer.unschedule_event(this->timer_descriptor);
+		this->timer_descriptor.invalidate();
+	}
 }
 
 // ---------------------------------------------------
@@ -363,10 +400,16 @@ SpellObject::SpellObject (World *world_, const Point& pos_, const Vector& direct
 void SpellObject::render (const float dt)
 {
 #ifdef AURORA_DEBUG_ENABLE_RENDER_COLLIDERS__
-	this->render_colliders(Color::red());
+	this->render_colliders(Colors::red);
 #endif
 
-	renderer->draw_cube3D(this->cube, this->get_ref_pos(), Color::red());
+	this->angle = std::fmod(this->angle + Config::spell_angular_speed * dt, Mylib::Math::degrees_to_radians(fp(360)));
+	this->cube.rotate(this->axis, this->angle);
+
+	if (!this->color_interpolator(dt))
+		Mylib::reconstruct(this->color_interpolator, Config::spell_color_time, &this->color, this->color, Colors::random(random_generator));
+
+	renderer->draw_cube3D(this->cube, this->get_ref_pos(), this->color);
 }
 
 // ---------------------------------------------------
