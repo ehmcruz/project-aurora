@@ -433,11 +433,11 @@ EnemyObject::EnemyObject (World *world_, const std::initializer_list<Point2> pos
 			const float distance = Mylib::Math::distance(previous_pos, next_pos);
 			const float time = distance / speed;
 
-			dprintln("interpolating from ", previous_pos, " to ", next_pos, " in ", time, " seconds");
+//			dprintln("interpolating from ", previous_pos, " to ", next_pos, " in ", time, " seconds");
 			
 			interpolation_manager.interpolate_linear(time, &self.get_ref_pos().x, previous_pos.x, next_pos.x);
 			co_await interpolation_manager.coroutine_wait_interpolate_linear(time, &self.get_ref_pos().y, previous_pos.y, next_pos.y);
-			dprintln("interpolating done, sleeping...");
+//			dprintln("interpolating done, sleeping...");
 			co_await timer.coroutine_wait(float_to_ClockDuration(delay));
 
 			it_previous_pos = it_next_position;
