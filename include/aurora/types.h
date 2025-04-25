@@ -10,6 +10,7 @@
 #include <SDL.h>
 
 #include <my-lib/std.h>
+#include <my-lib/coroutine.h>
 #include <my-lib/macros.h>
 #include <my-lib/math-vector.h>
 #include <my-lib/math-geometry.h>
@@ -58,6 +59,8 @@ using ClockDuration = Clock::duration;
 using ClockTime = Clock::time_point;
 
 using FooEvent = int;
+
+using Coroutine = Mylib::Coroutine<1024>;
 
 // ---------------------------------------------------
 

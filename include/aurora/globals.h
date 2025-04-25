@@ -32,10 +32,10 @@ inline std::mt19937_64 random_generator;
 
 // ---------------------------------------------------
 
-inline Mylib::Event::Timer timer( Clock::now );
+inline auto timer = Mylib::Event::make_timer<Coroutine>(Clock::now);
 using Timer = decltype(timer);
 
-inline Mylib::InterpolationManager<float> interpolation_manager;
+inline Mylib::InterpolationManager<Coroutine, float> interpolation_manager;
 
 // ---------------------------------------------------
 

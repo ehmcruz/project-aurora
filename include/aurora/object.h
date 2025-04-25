@@ -237,7 +237,7 @@ class EnemyObject : public DynamicObject
 {
 private:
 	Sprite sprite;
-	Mylib::Coroutine coroutine;
+	Coroutine coroutine;
 	
 public:
 	EnemyObject (World *world_, const std::initializer_list<Point2> positions);
