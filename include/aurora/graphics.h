@@ -112,6 +112,14 @@ public:
 	SpriteAnimation () = default;
 	SpriteAnimation (StaticObject *object_, std::span<TextureDescriptor> textures, const Vector2 size_, const Vector2 source_anchor_, const Vector3& dest_anchor_, const float frame_duration_);
 
+	// delete copy constructor and assignment operator
+	SpriteAnimation (const SpriteAnimation&) = delete;
+	SpriteAnimation& operator= (const SpriteAnimation&) = delete;
+
+	// provide default move construtor and assignment operator
+	SpriteAnimation (SpriteAnimation&&) = default;
+	SpriteAnimation& operator= (SpriteAnimation&&) = default;
+
 	void render (const float dt);
 
 	void play () noexcept
@@ -143,7 +151,7 @@ private:
 
 public:
 	SpriteAnimationArray(StaticObject *object_,
-	                     std::array<std::span<TextureDescriptor>, n> textures,
+	                     const std::array<std::span<TextureDescriptor>, n>& textures,
 						 const Vector2 size_,
 						 const Vector2 source_anchor_,
 						 const Vector3& dest_anchor_,
