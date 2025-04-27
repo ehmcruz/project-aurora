@@ -11,10 +11,25 @@ namespace Game
 
 // ---------------------------------------------------
 
-static const Quaternion q_rotation_45_degrees = Quaternion::rotation(Vector(0, 1, 0), Vector(1, 1, 0));
-static const Quaternion q_rotation_to_camera_vector = Quaternion::rotation(Vector(0, 0, -1), Config::camera_vector);
-static const Quaternion q_camera_rotation = q_rotation_to_camera_vector * q_rotation_45_degrees;
+// Some math functions will be constexpr only in c++26.
+// However, in several of them GCC already supports constexpr.
+// But clang does not support constexpr yet on them.
+// When both GCC and clang support c++26 math constexpr, we can remove this macro.
+
+#ifdef __clang__
+	#define XX_CONSTEXPR const
+#elif defined(__GNUC__)
+	#define XX_CONSTEXPR constexpr
+#else
+	#define XX_CONSTEXPR const
+#endif
+
+static XX_CONSTEXPR Quaternion q_rotation_45_degrees = Quaternion::rotation(Vector(0, 1, 0), Vector(1, 1, 0));
+static XX_CONSTEXPR Quaternion q_rotation_to_camera_vector = Quaternion::rotation(Vector(0, 0, -1), Config::camera_vector);
+static XX_CONSTEXPR Quaternion q_camera_rotation = q_rotation_to_camera_vector * q_rotation_45_degrees;
 static VectorBasis basis_camera; // z is the camera vector in the opposite direction
+
+#undef XX_CONSTEXPR
 
 // ---------------------------------------------------
 
