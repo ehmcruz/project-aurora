@@ -81,7 +81,7 @@ void load_objects ()
 				.sprite_dest_anchor = Vector3(0, 0, -2)
 			}
 		});
-		mylib_assert_exception_msg(success, "failed to insert blueprint for Tree_00");
+		mylib_assert_msg(success, "failed to insert blueprint for Tree_00");
 	}
 
 	// castle_00
@@ -97,7 +97,7 @@ void load_objects ()
 				.sprite_dest_anchor = Vector3(-1.7, -1.7, -2.5)
 			}
 		});
-		mylib_assert_exception_msg(success, "failed to insert blueprint for Castle_00");
+		mylib_assert_msg(success, "failed to insert blueprint for Castle_00");
 	}
 
 	// explosion
@@ -115,7 +115,7 @@ void load_objects ()
 				.die_after_animation = true
 			}
 		});
-		mylib_assert_exception_msg(success, "failed to insert blueprint for Explosion");
+		mylib_assert_msg(success, "failed to insert blueprint for Explosion");
 	}
 }
 
@@ -128,7 +128,7 @@ std::unique_ptr<StaticObjectSprite> build_static_object_sprite (
 	)
 {
 	const auto it = blueprints_static_object_sprite.find({std::to_underlying(subtype)});
-	mylib_assert_exception_msg(it != blueprints_static_object_sprite.end(), "blueprint not found for ", subtype);
+	mylib_assert_msg(it != blueprints_static_object_sprite.end(), "blueprint not found for ", subtype);
 
 	const auto& blueprint = it->second;
 
@@ -162,7 +162,7 @@ std::unique_ptr<StaticObjectAnimation> build_static_object_animation (
 	)
 {
 	const auto it = blueprints_static_object_animation.find({std::to_underlying(subtype)});
-	mylib_assert_exception_msg(it != blueprints_static_object_animation.end(), "blueprint not found for ", subtype);
+	mylib_assert_msg(it != blueprints_static_object_animation.end(), "blueprint not found for ", subtype);
 
 	const auto& blueprint = it->second;
 
@@ -556,7 +556,10 @@ const char* enum_class_to_str (const Object::Type value)
 		#undef _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_
 	});
 
-	mylib_assert_exception_msg(std::to_underlying(value) < strs.size(), "invalid enum class value ", std::to_underlying(value))
+	using EnumType = typename Mylib::remove_type_qualifiers<decltype(value)>::type;
+	using ExceptionType = typename Mylib::InvalidEnumClassValueException<EnumType>;
+
+	mylib_assert_exception_args(std::to_underlying(value) < strs.size(), ExceptionType, value)
 
 	return strs[ std::to_underlying(value) ];
 }
@@ -571,7 +574,10 @@ const char* enum_class_to_str (const Object::Subtype value)
 		#undef _MYLIB_ENUM_CLASS_OBJECT_SUBTYPE_VALUE_
 	});
 
-	mylib_assert_exception_msg(std::to_underlying(value) < strs.size(), "invalid enum class value ", std::to_underlying(value))
+	using EnumType = typename Mylib::remove_type_qualifiers<decltype(value)>::type;
+	using ExceptionType = typename Mylib::InvalidEnumClassValueException<EnumType>;
+
+	mylib_assert_exception_args(std::to_underlying(value) < strs.size(), ExceptionType, value)
 
 	return strs[ std::to_underlying(value) ];
 }
@@ -586,8 +592,11 @@ const char* enum_class_to_str (const Object::Direction value)
 		#undef _MYLIB_ENUM_CLASS_OBJECT_TYPE_VALUE_
 	});
 
-	mylib_assert_exception_msg(std::to_underlying(value) < strs.size(), "invalid enum class value ", std::to_underlying(value))
+	using EnumType = typename Mylib::remove_type_qualifiers<decltype(value)>::type;
+	using ExceptionType = typename Mylib::InvalidEnumClassValueException<EnumType>;
 
+	mylib_assert_exception_args(std::to_underlying(value) < strs.size(), ExceptionType, value)
+	
 	return strs[ std::to_underlying(value) ];
 }
 

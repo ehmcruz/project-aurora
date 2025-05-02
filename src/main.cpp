@@ -156,7 +156,7 @@ void Main::run ()
 			break;
 			
 			default:
-				mylib_assert_exception(0)
+				mylib_assert(0)
 		}
 
 		renderer->render();
@@ -168,7 +168,7 @@ void Main::run ()
 			break;
 			
 			default:
-				mylib_assert_exception(0)
+				mylib_assert(0)
 		}
 
 		const ClockTime trequired = Clock::now();
