@@ -84,7 +84,7 @@ void load_graphics ()
 Sprite::Sprite (StaticObject *object_, const TextureDescriptor& texture_, const Vector2 size_, const Vector2 source_anchor_, const Vector3& dest_anchor_)
 	: object(object_), texture(texture_) //size(size_), ds(ds_)
 {
-	using enum Rect2D::VertexPositionIndex;
+	using enum MyGlib::Graphics::Enums::TextureVertexPositionIndex;
 
 	const Vector half_size = size_ / fp(2);
 

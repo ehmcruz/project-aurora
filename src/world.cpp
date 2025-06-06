@@ -103,7 +103,7 @@ Map::Map (World *world_)
 
 	// generate graphics vertices
 
-	using enum Rect2D::VertexPositionIndex;
+	using enum MyGlib::Graphics::Enums::TextureVertexPositionIndex;
 
 	this->graphics_vertices.resize((this->vertices.get_nrows()-1) * (this->vertices.get_ncols()-1) * 6);
 
